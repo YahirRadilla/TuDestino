@@ -1,0 +1,16 @@
+node_modules/
+dist/
+dev-dist/
+coverage/
+.env
+.env.*
+!.env.example
+*.local
+*.log
+.DS_Store
+
+# Report evidence (never committed, never served)
+backend/uploads/
+
+# Local agent tooling
+.atl/
