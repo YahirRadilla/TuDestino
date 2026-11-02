@@ -1,5 +1,6 @@
 // Local sample data (Sprint 1). Replaced by the API in later sprints.
-// Ratings, review counts and distances (km from La Paz) are illustrative sample values.
+// Ratings and reviews are not bundled: they are shown only when real reviews arrive from the API.
+// Distances (km from La Paz) are illustrative sample values.
 
 export const CATEGORIES = [
   { id: 'playa', label: 'Playas', icon: 'waves' },
@@ -18,8 +19,6 @@ export const DESTINATIONS = [
     location: 'La Paz, Baja California Sur',
     categories: ['playa'],
     tag: 'Playa',
-    rating: 4.7,
-    reviews: 128,
     distanceKm: 25,
     coords: { lat: 24.3436, lng: -110.3167 },
     summary: 'Aguas someras y tranquilas frente a la isla Espíritu Santo.',
@@ -45,8 +44,6 @@ export const DESTINATIONS = [
     location: 'La Paz, Baja California Sur',
     categories: ['anp', 'playa'],
     tag: 'ANP',
-    rating: 4.9,
-    reviews: 342,
     distanceKm: 26,
     coords: { lat: 24.3185, lng: -110.3249 },
     summary: 'Bahía de aguas turquesa y manglar, famosa por su roca El Hongo.',
@@ -72,8 +69,6 @@ export const DESTINATIONS = [
     location: 'Los Cabos, Baja California Sur',
     categories: ['anp'],
     tag: 'Parque Nacional',
-    rating: 4.8,
-    reviews: 211,
     distanceKm: 190,
     coords: { lat: 23.4333, lng: -109.4236 },
     summary: 'Uno de los arrecifes de coral más importantes del Mar de Cortés.',
@@ -99,8 +94,6 @@ export const DESTINATIONS = [
     location: 'La Paz, Baja California Sur',
     categories: ['anp'],
     tag: 'Parque Nacional',
-    rating: 4.9,
-    reviews: 487,
     distanceKm: 30,
     coords: { lat: 24.4667, lng: -110.3833 },
     summary: 'Archipiélago de acantilados rojizos, lobos marinos y bahías de cuento.',
@@ -126,8 +119,6 @@ export const DESTINATIONS = [
     location: 'Todos Santos, Baja California Sur',
     categories: ['cultura'],
     tag: 'Pueblo Mágico',
-    rating: 4.6,
-    reviews: 176,
     distanceKm: 80,
     coords: { lat: 23.4486, lng: -110.2253 },
     summary: 'Pueblo Mágico de galerías, huertos y arquitectura de misión.',
@@ -153,8 +144,6 @@ export const DESTINATIONS = [
     location: 'Mulegé, Baja California Sur',
     categories: ['playa', 'mirador'],
     tag: 'Playa',
-    rating: 4.8,
-    reviews: 159,
     distanceKm: 480,
     coords: { lat: 26.7, lng: -111.9 },
     summary: 'Bahía larga y serena con playas como Santispac y Requesón.',
@@ -180,8 +169,6 @@ export const DESTINATIONS = [
     location: 'El Pescadero, Baja California Sur',
     categories: ['playa'],
     tag: 'Playa',
-    rating: 4.5,
-    reviews: 203,
     distanceKm: 95,
     coords: { lat: 23.3217, lng: -110.1778 },
     summary: 'Olas constantes para surfear y atardeceres sobre el Pacífico.',
@@ -207,8 +194,6 @@ export const DESTINATIONS = [
     location: 'Mulegé, Baja California Sur',
     categories: ['anp'],
     tag: 'Santuario de ballenas',
-    rating: 4.9,
-    reviews: 98,
     distanceKm: 740,
     coords: { lat: 26.8, lng: -113.2 },
     summary: 'Santuario donde la ballena gris llega a reproducirse cada invierno.',
@@ -226,27 +211,6 @@ export const DESTINATIONS = [
       'Respeta los horarios y las zonas de avistamiento.',
     ],
     images: img('laguna-san-ignacio'),
-  },
-];
-
-export const REVIEWS_SAMPLE = [
-  {
-    id: 'r1',
-    rating: 5,
-    text: 'Muy bien cuidado y con poca gente en la mañana. Vale la pena llegar temprano.',
-    when: 'Hace 2 semanas',
-  },
-  {
-    id: 'r2',
-    rating: 4,
-    text: 'Hermoso lugar. Falta señalización, pero el personal fue muy amable.',
-    when: 'Hace 1 mes',
-  },
-  {
-    id: 'r3',
-    rating: 5,
-    text: 'Lo mejor es respetar las reglas: se nota que así se mantiene limpio.',
-    when: 'Hace 2 meses',
   },
 ];
 

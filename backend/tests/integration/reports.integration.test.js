@@ -152,7 +152,9 @@ describe.skipIf(!process.env.DATABASE_URL)('citizen reports API (PostgreSQL)', (
       expect(res.status).toBe(200);
       expect(res.body.data.length).toBeGreaterThanOrEqual(4);
       for (const type of res.body.data) expect(Object.keys(type).sort()).toEqual(['name', 'slug']);
-      expect(res.body.data.map((t) => t.slug)).toContain('tortuga-anidando');
+      expect(res.body.data.map((t) => t.slug)).toEqual(
+        expect.arrayContaining(['tortuga-anidando', 'otro']),
+      );
     });
   });
 

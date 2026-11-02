@@ -44,7 +44,20 @@ describe('DestinationDetailPage', () => {
     renderAt('balandra');
     expect(await screen.findByRole('heading', { name: 'Balandra API' })).toBeInTheDocument();
     expect(screen.queryByText('Visita responsable')).not.toBeInTheDocument();
-    expect(await screen.findByText(/Todavía no hay reseñas/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Reseñas' })).toBeInTheDocument();
+    expect(screen.queryByText(/Todavía no hay reseñas/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: /Compartir/ })).not.toBeInTheDocument();
+  });
+
+  it('does not show a rating until the destination has real reviews', async () => {
+    stubApi({
+      'GET /destinations/balandra': { data: { ...detail, avg_rating: 0, reviews_count: 0 }, meta: {} },
+      'GET /destinations/balandra/reviews': noReviews,
+    });
+    renderAt('balandra');
+    expect(await screen.findByRole('heading', { name: 'Balandra API' })).toBeInTheDocument();
+    expect(screen.queryByText('0.0')).not.toBeInTheDocument();
+    expect(screen.queryByText(/0 reseñas/)).not.toBeInTheDocument();
   });
 
   it('shows "not found" when the API answers 404', async () => {
@@ -61,6 +74,8 @@ describe('DestinationDetailPage', () => {
     renderAt('balandra');
     expect(await screen.findByRole('heading', { name: 'Balandra' })).toBeInTheDocument();
     expect(screen.getByText(/No pudimos contactar al servidor/)).toBeInTheDocument();
+    expect(screen.queryByText('4.9')).not.toBeInTheDocument();
+    expect(screen.queryByText(/342 reseñas/)).not.toBeInTheDocument();
   });
 
   it('works offline from the copy saved on the device, with the sync time', async () => {

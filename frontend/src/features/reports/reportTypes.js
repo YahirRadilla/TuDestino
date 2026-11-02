@@ -25,6 +25,12 @@ export const REPORT_TYPES = Object.freeze([
     icon: 'eye',
     help: 'Caza, extracción o perturbación de fauna.',
   },
+  {
+    slug: 'otro',
+    name: 'Otro',
+    icon: 'flag',
+    help: 'Otra situación que quieras reportar y no encaje en las anteriores.',
+  },
 ]);
 
 const BY_SLUG = Object.fromEntries(REPORT_TYPES.map((type) => [type.slug, type]));

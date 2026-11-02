@@ -6,7 +6,7 @@ import LoadingGrid from '../../../shared/components/LoadingGrid.jsx';
 import PageHeader from '../../../shared/components/PageHeader.jsx';
 import StateCard from '../../../shared/components/StateCard.jsx';
 import EduCard from '../components/EduCard.jsx';
-import { useDebouncedValue, useEduCategories, useEduContents } from '../hooks/useEdu.js';
+import { useDebouncedValue, useEduContents } from '../hooks/useEdu.js';
 
 const TYPES = [
   { id: 'article', label: 'Artículos' },
@@ -37,13 +37,9 @@ function Chips({ label, options, value, onChange, allLabel }) {
 
 export default function EducationPage() {
   const [text, setText] = useState('');
-  const [category, setCategory] = useState(null);
   const [type, setType] = useState(null);
   const q = useDebouncedValue(text.trim());
-  const contents = useEduContents({ category, type, q });
-  const categories = useEduCategories();
-
-  const categoryOptions = (categories.data ?? []).map(({ slug, name }) => ({ id: slug, label: name }));
+  const contents = useEduContents({ type, q });
 
   return (
     <div className="container page">
@@ -62,15 +58,6 @@ export default function EducationPage() {
         />
       </form>
       <Chips label="Tipo de contenido" options={TYPES} value={type} onChange={setType} allLabel="Todo" />
-      {categoryOptions.length > 0 && (
-        <Chips
-          label="Categorías"
-          options={categoryOptions}
-          value={category}
-          onChange={setCategory}
-          allLabel="Todas"
-        />
-      )}
 
       {contents.status === 'loading' && <LoadingGrid label="Cargando contenido…" count={3} />}
       {contents.status === 'error' && (

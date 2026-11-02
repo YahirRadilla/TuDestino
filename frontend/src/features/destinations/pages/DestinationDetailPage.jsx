@@ -3,7 +3,6 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import Icon from '../../../shared/components/Icon.jsx';
 import StateCard from '../../../shared/components/StateCard.jsx';
 import FavoriteButton from '../components/FavoriteButton.jsx';
-import ShareButton from '../components/ShareButton.jsx';
 import DataNotice from '../../../shared/components/DataNotice.jsx';
 import ErrorState from '../../../shared/components/ErrorState.jsx';
 import ReviewsSection from '../components/ReviewsSection.jsx';
@@ -64,6 +63,7 @@ export default function DestinationDetailPage() {
   const { name, location, description, details, care, images, tag, distanceKm } = destination;
   const rating = totals?.rating ?? destination.rating;
   const reviews = totals?.reviews ?? destination.reviews;
+  const hasReviews = Number(reviews) > 0;
 
   const cta = (
     <a className="btn btn--primary btn--block" href={directions} target="_blank" rel="noopener noreferrer">
@@ -83,11 +83,6 @@ export default function DestinationDetailPage() {
         <button type="button" className="icon-btn icon-btn--glass" onClick={goBack} aria-label="Volver">
           <Icon name="back" />
         </button>
-        <ShareButton
-          name={destination.name}
-          text={`${destination.name}: ${destination.summary}`}
-          path={`/destinos/${destination.slug}`}
-        />
       </div>
 
       <div className="detail__gallery-wrap">
@@ -115,11 +110,13 @@ export default function DestinationDetailPage() {
                 <Icon name="pin" size={18} filled className="pin" />
                 {location}
               </p>
-              <p className="detail__rating">
-                <Icon name="star" size={18} filled className="star" />
-                <strong>{rating.toFixed(1)}</strong>
-                <span className="muted">({reviews} reseñas)</span>
-              </p>
+              {hasReviews && (
+                <p className="detail__rating">
+                  <Icon name="star" size={18} filled className="star" />
+                  <strong>{Number(rating).toFixed(1)}</strong>
+                  <span className="muted">({reviews} reseñas)</span>
+                </p>
+              )}
             </header>
 
             <section aria-label="Descripción">
@@ -175,11 +172,13 @@ export default function DestinationDetailPage() {
           <aside className="detail__aside" aria-label="Resumen y acciones">
             <div className="aside-card">
               <span className="glass-chip aside-card__tag">{tag}</span>
-              <p className="aside-card__rating">
-                <Icon name="star" size={20} filled className="star" />
-                <strong>{rating.toFixed(1)}</strong>
-                <span className="muted">· {reviews} reseñas</span>
-              </p>
+              {hasReviews && (
+                <p className="aside-card__rating">
+                  <Icon name="star" size={20} filled className="star" />
+                  <strong>{Number(rating).toFixed(1)}</strong>
+                  <span className="muted">· {reviews} reseñas</span>
+                </p>
+              )}
               <dl className="aside-card__facts">
                 <div>
                   <dt>Ubicación</dt>

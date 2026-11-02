@@ -91,9 +91,6 @@ export default function MapPage() {
           </div>
 
           <div className="map-page__panel">
-            <a href="#map-list" className="btn btn--ghost map-skip">
-              Ir a la lista de lugares
-            </a>
             <div className="map-toolbar">
               <fieldset>
                 <legend>Capas</legend>

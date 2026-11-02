@@ -12,10 +12,10 @@
   --color-primary: #1f4fff;
   --color-primary-hover: #1a3fd1;
   --color-on-primary: #ffffff;
-  --color-accent: #ff4d94; /* navigation + favorites */
-  --color-accent-soft: #ffe3ef;
-  --color-on-accent: #14171f;
-  --color-nav-active: #d6246f; /* white text on it: 4.8:1 */
+  --color-accent: #1f4fff; /* navigation + favorites */
+  --color-accent-soft: #e8edff;
+  --color-on-accent: #ffffff;
+  --color-nav-active: #1f4fff; /* white text on it: 5.2:1 */
   --color-pin: #16a34a;
   --color-star: #f5b301;
   --color-badge: #e5342f;
@@ -69,7 +69,10 @@
   --color-border: #2a2f3a;
   --color-primary: #3f63ff;
   --color-primary-hover: #5a7aff;
-  --color-accent-soft: #3a1b2a;
+  --color-accent: #3f63ff;
+  --color-accent-soft: #1c2750;
+  --color-on-accent: #ffffff;
+  --color-nav-active: #3f63ff;
   --color-banner: #272a33;
   --glass-bg: rgba(26, 29, 36, 0.7);
   --glass-border: rgba(255, 255, 255, 0.14);

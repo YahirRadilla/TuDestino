@@ -1,7 +1,7 @@
 # TuDestino — Fuente única de verdad
 
 > Este archivo es la referencia canónica del proyecto. Si otro documento o una conversación lo contradice, gana este archivo. Si hay que cambiar una decisión, se edita aquí primero (y se registra en la sección 21).
-> Estado: **proyecto nuevo, sin código** (decisión del equipo: se parte desde cero, sin clonar `Manuel-Avila/tu-destino`). Última revisión: 2026-10-17.
+> Estado: **implementación F0–F9 completada y revisión final de interfaz/documentación en curso** (proyecto desde cero, sin clonar `Manuel-Avila/tu-destino`). Última revisión: 2026-11-02.
 
 ---
 
@@ -45,7 +45,7 @@ Los PDFs fuente viven en la raíz del proyecto (moverlos a `docs/fuentes/` cuand
 |---|---|
 | Destino / sitio | Lugar turístico publicable (playa, ANP, mirador, sitio cultural) |
 | ANP | Área Natural Protegida |
-| Reporte | Aviso ciudadano (tortuga anidando, animal varado, contaminación, actividad sospechosa) |
+| Reporte | Aviso ciudadano (tortuga anidando, animal varado, contaminación, actividad sospechosa; «Otro» se agregó como opción adicional) |
 | Folio | Identificador legible de un reporte, p. ej. `TD-2026-000123` |
 | Código de seguimiento | Secreto que acompaña al folio para consultar un reporte anónimo |
 | Autoridad | Persona de una dependencia ambiental que gestiona reportes y contenido |
@@ -89,7 +89,7 @@ Fuente: `Monica.pdf` págs. 9–11, salvo los marcados como *nuevo*.
 | RF03 | Consultar educación ambiental | Media |
 | RF04 | Módulo de eventos (limpiezas, jornadas) en lista y calendario | Alta |
 | RF05 | Ciudadanos y turistas pueden crear reportes | Alta |
-| RF06 | Tipos de reporte: tortuga anidando, animal varado, contaminación, actividad sospechosa | Alta |
+| RF06 | Tipos de reporte: tortuga anidando, animal varado, contaminación, actividad sospechosa; «Otro» como opción adicional | Alta |
 | RF07 | Adjuntar fotos de evidencia | Alta |
 | RF08 | Incluir ubicación aproximada | Alta |
 | RF09 | Reporte anónimo | Alta |
@@ -191,8 +191,8 @@ Fuente: `Monica.pdf` págs. 11–12. Se añaden métricas verificables.
 | ID | API | Función real | Beneficio para el usuario |
 |---|---|---|---|
 | PWA-13 | Background Sync | Cola de reportes creados sin señal; se envían al volver la conexión. `client_uuid` evita duplicados. Fallback sin soporte (Safari): evento `online` y reintento al abrir la app | Playas y zonas protegidas casi nunca tienen cobertura |
-| PWA-14 | Geolocation | Captura de coordenadas del reporte y orden "cerca de mí" | Reporte preciso sin escribir coordenadas |
-| PWA-15 | Web Share | Compartir destinos y eventos; fallback: copiar enlace | Difunde campañas de limpieza (ODS 17) |
+| PWA-14 | Geolocation | Captura de coordenadas del reporte, «Mi ubicación» en el mapa y selector en propuestas de eventos | Reporte preciso sin escribir coordenadas |
+| PWA-15 | Web Share | Compartir eventos (tarjeta y detalle); fallback: copiar enlace. El botón de destinos se retiró en la revisión final de interfaz | Difunde campañas de limpieza (ODS 17) |
 | PWA-16 | Push + Badging | Aviso cuando cambia el estado de un reporte y recordatorio de eventos; el badge muestra notificaciones sin leer | Seguimiento sin abrir la app. En iOS solo funciona con la PWA instalada (se documenta) |
 
 Si hay que recortar alcance: PWA-13 y PWA-14 bastan para la rúbrica; PWA-16 es la más costosa.
@@ -215,7 +215,7 @@ Cada integrante debe poder explicar y modificar todo el código. Se registra cad
 | Validación y seguridad | zod, helmet, express-rate-limit, CORS restrictivo, bcrypt o argon2 |
 | Datos | PostgreSQL 16 + PostGIS |
 | Archivos | Cloudinary (con `f_auto,q_auto`) |
-| Mapas | Google Maps JS API (ver D-03) |
+| Mapas | Leaflet + OpenStreetMap (ADR-09) |
 | Correo | nodemailer + proveedor SMTP (Resend, Brevo o Mailtrap en desarrollo) |
 | Push | `web-push` (VAPID) |
 | Entorno local | Docker Compose (db, api, web) |
@@ -384,7 +384,7 @@ Base: `/api/v1`. Errores con formato uniforme `{ "error": { "code": "...", "mess
 | Imágenes de Cloudinary | Cache-first con expiración (≈150 entradas, 30 días) |
 | Autenticación, panel de administración, `POST`/`PATCH`/`DELETE` | Network-only |
 | `POST /reports` | Network-only + cola de Background Sync + *outbox* en IndexedDB visible en la interfaz |
-| Tiles de mapa | **Sin caché** si se usa Google Maps (términos de servicio). Sin conexión, el mapa se reemplaza por la lista de destinos con coordenadas guardadas en IndexedDB |
+| Tiles de mapa | `CacheFirst` para las teselas ya visitadas de OpenStreetMap (máx. 300, 7 días). Sin teselas, el mapa pasa a un fondo neutro y la lista equivalente sigue disponible con los destinos guardados en IndexedDB |
 
 **Almacenamiento local:** LocalStorage (tema, aviso de instalación); SessionStorage (borradores de formularios, filtros activos); IndexedDB (contenido cacheado, favoritos, outbox).
 
@@ -401,7 +401,7 @@ Base: `/api/v1`. Errores con formato uniforme `{ "error": { "code": "...", "mess
 | Contraseñas | bcrypt o argon2; mensajes de error genéricos |
 | Abuso | Rate limiting en login, recuperación y reportes |
 | Transporte | HTTPS obligatorio; helmet y CORS restrictivo |
-| Secretos | Solo en variables de entorno; `.env.example` versionado, `.env` en `.gitignore` |
+| Secretos | Solo en variables de entorno; `.env` en `.gitignore` y variables documentadas en `README.md` (no hay `.env.example` versionado) |
 | Autorización | RBAC verificado en el servidor, nunca solo en la interfaz |
 
 ---
@@ -471,7 +471,7 @@ Variables de entorno previstas: `DATABASE_URL`, `JWT_SECRET`, `JWT_REFRESH_SECRE
 3. [ ] **Documento técnico** (`docs/documento-tecnico.md`): descripción; tecnologías; características PWA obligatorias y adicionales (dónde, cómo y por qué); características no implementadas y razón; pruebas; evidencias (capturas, Lighthouse, código); uso de IA.
 4. [ ] **Presentación** con demo offline, demo de instalación y demo de las características adicionales.
 
-Guion de demo sugerido: instalar la app → activar modo avión y navegar contenido cacheado → crear un reporte sin conexión → recuperar conexión y ver la sincronización → compartir un destino → recibir un aviso push por cambio de estado.
+Guion de demo sugerido: instalar la app → activar modo avión y navegar contenido cacheado → crear un reporte sin conexión → recuperar conexión y ver la sincronización → compartir un evento → recibir un aviso push por cambio de estado.
 
 ---
 
@@ -492,12 +492,12 @@ Guion de demo sugerido: instalar la app → activar modo avión y navegar conten
 | PWA-11 HTTPS | Despliegue | RNF05 | Navegador | Captura | ⬜ |
 | PWA-12 Lighthouse | Optimización de assets | RNF04, RNF06 | Lighthouse | Reporte por release | ⬜ |
 | PWA-13 Background Sync | Cola de reportes | RF05–RF09, RF23, HU-T09 | Modo avión + reconexión | Video | ⬜ |
-| PWA-14 Geolocation | Formulario de reporte, "cerca de mí" | RF08, HU-T13 | Manual | Captura | ⬜ |
-| PWA-15 Web Share | Detalle de destino y evento | RF04, RF21 | Manual en móvil | Captura | ⬜ |
+| PWA-14 Geolocation | Formulario de reporte, mapa y propuesta de eventos | RF08, HU-T13 | Manual | Captura | ⬜ |
+| PWA-15 Web Share | Tarjeta y detalle de evento (el destino ya no muestra el botón) | RF04, RF21 | Manual en móvil | Captura | ⬜ |
 | PWA-16 Push + Badging | Notificaciones de reporte y eventos | RF12, RF22, HU-A04, HU-T07 | Manual | Captura | ⬜ |
 | No implementadas | A-Frame, OAuth, Wake Lock, reservas/pagos | — | — | Texto en el documento técnico | ⬜ |
 
-**Matriz inversa (RF → pantalla → endpoint):** se mantiene en `docs/trazabilidad-rf.md` y debe cubrir RF01–RF23 antes de la entrega.
+**Matriz inversa (RF → pantalla → endpoint):** se mantiene en `docs/trazabilidad-rf.md` y debe cubrir RF01–RF23 antes de la entrega. Ese documento conserva el detalle de implementación y pruebas por fase; esta matriz se actualiza al cierre de la entrega.
 
 ---
 
@@ -515,6 +515,8 @@ Guion de demo sugerido: instalar la app → activar modo avión y navegar conten
 | ADR-06 | Cuatro roles: `visitor`, `user`, `authority`, `admin` | Los PDFs usan nombres distintos sin unificar |
 | ADR-07 | Auditoría Lighthouse sin categoría PWA | Lighthouse 12+ la eliminó |
 | ADR-08 | `CLAUDE.md` en español neutro; código e identificadores en inglés | Documentos fuente en español |
+| ADR-09 | Leaflet + OpenStreetMap en lugar de Google Maps | Sin API key ni facturación; permite cachear teselas visitadas y el modo sin conexión. Cierra D-03 |
+| ADR-10 | Interfaz final: tema azul, Inicio y Explorar comparten catálogo, sin «Cerca de mí» en el catálogo ni botón de compartir en destinos; valoraciones solo reales | Simplificar la navegación y no mostrar datos simulados |
 
 ### Decisiones abiertas (valor por defecto aplicado; el equipo puede cambiarlo)
 
@@ -522,4 +524,3 @@ Guion de demo sugerido: instalar la app → activar modo avión y navegar conten
 |---|---|---|
 | D-01 | ¿Quién organiza eventos y publica sitios? El enfoque "Airbnb" sugiere que los usuarios, pero los PDFs (RF14, HU-A06) dicen que solo la autoridad | Los usuarios **proponen** eventos (`pending`) y la autoridad los aprueba. Sin reservas ni pagos |
 | D-02 | ¿La inscripción a eventos es solo "Asistiré" o un registro con cupo y cancelación? | "Asistiré" simple (HU-T07) |
-| D-03 | ¿Google Maps (lo que dice tics.pdf) o Leaflet + OpenStreetMap? | Google Maps. Exige API key con facturación y no permite caché offline; Leaflet es gratis y más amigable con el modo sin conexión, pero se aparta de tics.pdf |

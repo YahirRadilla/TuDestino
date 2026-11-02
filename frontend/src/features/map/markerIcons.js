@@ -28,7 +28,7 @@ const GLYPHS = {
 };
 
 export const COLORS = {
-  destination: '#d6246e', // pink (brand accent, darkened for contrast)
+  destination: '#1f4fff', // brand blue
   'report-contaminacion': '#7c3aed',
   'report-animal-varado': '#0e7490',
   'report-tortuga-anidando': '#15803d',

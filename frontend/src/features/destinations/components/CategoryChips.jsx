@@ -1,4 +1,3 @@
-import { Link } from 'react-router-dom';
 import Icon from '../../../shared/components/Icon.jsx';
 import { CATEGORIES } from '../data/seed.js';
 
@@ -21,10 +20,6 @@ export default function CategoryChips({ selected, onSelect }) {
           {category.label}
         </button>
       ))}
-      <Link to="/eventos" className="chip">
-        <Icon name="calendar" size={18} />
-        Eventos
-      </Link>
     </div>
   );
 }

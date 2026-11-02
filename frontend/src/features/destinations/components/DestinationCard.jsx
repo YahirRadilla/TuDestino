@@ -4,6 +4,7 @@ import FavoriteButton from './FavoriteButton.jsx';
 
 export default function DestinationCard({ destination }) {
   const { slug, name, location, tag, rating, reviews, distanceKm, images } = destination;
+  const hasReviews = Number(reviews) > 0;
   return (
     <article className="dest-card">
       <Link to={`/destinos/${slug}`} className="dest-card__link">
@@ -17,11 +18,13 @@ export default function DestinationCard({ destination }) {
             <Icon name="pin" size={16} filled className="pin" />
             <span>{location}</span>
           </p>
-          <p className="dest-card__rating">
-            <Icon name="star" size={16} filled className="star" />
-            <strong>{rating.toFixed(1)}</strong>
-            <span className="muted">({reviews} reseñas)</span>
-          </p>
+          {hasReviews && (
+            <p className="dest-card__rating">
+              <Icon name="star" size={16} filled className="star" />
+              <strong>{Number(rating).toFixed(1)}</strong>
+              <span className="muted">({reviews} reseñas)</span>
+            </p>
+          )}
         </div>
       </Link>
       <div className="dest-card__chips">

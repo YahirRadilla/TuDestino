@@ -50,21 +50,21 @@ describe('EducationPage', () => {
     expect(screen.getByText('Cargando contenido…')).toBeInTheDocument();
     expect(await screen.findByRole('heading', { name: 'Qué hacer si ves una tortuga' })).toBeInTheDocument();
     expect(screen.getByText('3 resultados')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Fauna marina' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Todo' })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Fauna marina' })).not.toBeInTheDocument();
   });
 
-  it('sends the category and type filters to the API', async () => {
+  it('sends only the type filter to the API', async () => {
     const api = stubApi(routes());
     renderPage();
     await screen.findByRole('heading', { name: 'La ballena gris' });
-    await userEvent.click(await screen.findByRole('button', { name: 'Fauna marina' }));
     await userEvent.click(screen.getByRole('button', { name: 'Videos' }));
     await waitFor(() => {
       const last = api.fetchMock.mock.calls
         .filter(([url]) => String(url).includes('/edu-contents'))
         .at(-1)[0];
-      expect(last).toContain('category=fauna');
       expect(last).toContain('type=video');
+      expect(last).not.toContain('category=');
     });
   });
 
@@ -145,12 +145,13 @@ describe('EducationPage', () => {
       vi.stubGlobal('fetch', vi.fn().mockRejectedValue(new TypeError('Failed to fetch')));
     };
 
-    it('shows the saved library with filters and categories derived from it', async () => {
+    it('shows the saved library with the type filters', async () => {
       await visitOnline();
       renderPage();
       expect(await screen.findByRole('heading', { name: 'La ballena gris' })).toBeInTheDocument();
       expect(screen.getByText(/mostrando datos guardados/)).toBeInTheDocument();
-      expect(await screen.findByRole('button', { name: 'Fauna marina' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Todo' })).toBeInTheDocument();
+      expect(screen.queryByRole('button', { name: 'Fauna marina' })).not.toBeInTheDocument();
       await userEvent.click(screen.getByRole('button', { name: 'Enlaces' }));
       expect(await screen.findByRole('heading', { name: 'Guía oficial' })).toBeInTheDocument();
       expect(screen.queryByRole('heading', { name: 'La ballena gris' })).not.toBeInTheDocument();

@@ -1,5 +1,5 @@
 // Mirrors frontend/src/features/destinations/data/seed.js (same slugs, names and coordinates).
-// Ratings and review counts are illustrative development values, not real reviews.
+// Ratings and review counts are never seeded: they only come from real reviews in PostgreSQL.
 // Each destination has a single primary category in the database (category_id).
 
 const images = (slug, name) =>
@@ -17,8 +17,6 @@ export const destinations = [
     lat: 24.3436,
     lng: -110.3167,
     is_protected_area: false,
-    avg_rating: 4.7,
-    reviews_count: 128,
     summary: 'Aguas someras y tranquilas frente a la isla Espíritu Santo.',
     description:
       'Playa amplia de arena clara al norte de La Paz, con aguas someras y tranquilas ideales para ir en familia. Desde la orilla se ve la silueta de la isla Espíritu Santo y, al final de la tarde, el atardecer es uno de los más buscados de la bahía. Hay palapas con comida local, pero conviene llevar agua y protección solar.',
@@ -43,8 +41,6 @@ export const destinations = [
     lat: 24.3185,
     lng: -110.3249,
     is_protected_area: true,
-    avg_rating: 4.9,
-    reviews_count: 342,
     summary: 'Bahía de aguas turquesa y manglar, famosa por su roca El Hongo.',
     description:
       'Bahía protegida de aguas turquesa y poca profundidad, rodeada de manglar y dunas. Es un Área de Protección de Flora y Fauna: el acceso tiene un aforo regulado y hay zonas que no se pueden pisar para cuidar el pasto marino y el manglar. La roca El Hongo es su imagen más conocida.',
@@ -70,8 +66,6 @@ export const destinations = [
     lat: 23.4333,
     lng: -109.4236,
     is_protected_area: true,
-    avg_rating: 4.8,
-    reviews_count: 211,
     summary: 'Uno de los arrecifes de coral más importantes del Mar de Cortés.',
     description:
       'Parque Nacional que protege un arrecife de coral de origen muy antiguo en el Golfo de California. Es un sitio muy valorado para el buceo y el snorkel, con gran variedad de peces. La recuperación de su vida marina es un caso reconocido de conservación comunitaria. Se recomienda contratar guías locales autorizados.',
@@ -97,8 +91,6 @@ export const destinations = [
     lat: 24.4667,
     lng: -110.3833,
     is_protected_area: true,
-    avg_rating: 4.9,
-    reviews_count: 487,
     summary: 'Archipiélago de acantilados rojizos, lobos marinos y bahías de cuento.',
     description:
       'Parque Nacional Archipiélago de Espíritu Santo, Patrimonio de la Humanidad dentro de las Islas y Áreas Protegidas del Golfo de California. Se visita en lancha con operadores autorizados. Es famoso por su lobera, por las playas aisladas y por la posibilidad de nadar con lobos marinos de forma responsable.',
@@ -124,8 +116,6 @@ export const destinations = [
     lat: 23.4486,
     lng: -110.2253,
     is_protected_area: false,
-    avg_rating: 4.6,
-    reviews_count: 176,
     summary: 'Pueblo Mágico de galerías, huertos y arquitectura de misión.',
     description:
       'Pueblo con casonas del siglo XIX, galerías de arte, cafés y huertos orgánicos a pocos minutos del Pacífico. Su centro histórico se recorre a pie. Cada año se celebra un festival de arte y se pueden visitar talleres de artesanos locales. Es una buena parada para apoyar la economía local.',
@@ -150,8 +140,6 @@ export const destinations = [
     lat: 26.7,
     lng: -111.9,
     is_protected_area: false,
-    avg_rating: 4.8,
-    reviews_count: 159,
     summary: 'Bahía larga y serena con playas como Santispac y Requesón.',
     description:
       'Bahía de aguas verdes y calmas sobre el Mar de Cortés, con playas como Santispac, Requesón y El Coyote. Desde la carretera transpeninsular hay varios miradores con vistas amplias. Es un destino popular para acampar y practicar kayak, por lo que la gestión de residuos es clave.',
@@ -176,8 +164,6 @@ export const destinations = [
     lat: 23.3217,
     lng: -110.1778,
     is_protected_area: false,
-    avg_rating: 4.5,
-    reviews_count: 203,
     summary: 'Olas constantes para surfear y atardeceres sobre el Pacífico.',
     description:
       'Playa abierta al Pacífico, conocida por sus olas aptas para aprender y practicar surf. Las corrientes pueden ser fuertes, así que conviene nadar solo en las zonas señaladas. En temporada de anidación, las tortugas marinas llegan a playas cercanas: si ves una, mantén distancia y reporta el avistamiento.',
@@ -202,8 +188,6 @@ export const destinations = [
     lat: 26.8,
     lng: -113.2,
     is_protected_area: true,
-    avg_rating: 4.9,
-    reviews_count: 98,
     summary: 'Santuario donde la ballena gris llega a reproducirse cada invierno.',
     description:
       'Laguna dentro de la Reserva de la Biósfera El Vizcaíno, donde cada invierno llegan las ballenas grises a parir y criar. La temporada de avistamiento va aproximadamente de enero a abril y se realiza en lanchas autorizadas, con reglas estrictas para no perturbar a los animales. Es un viaje largo pero muy significativo.',

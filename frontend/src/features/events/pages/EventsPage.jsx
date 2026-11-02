@@ -44,7 +44,7 @@ export default function EventsPage() {
       <PageHeader
         title="Eventos"
         action={
-          <Link to="/eventos/proponer" className="btn btn--ghost btn--small">
+          <Link to="/eventos/proponer" className="btn btn--surface btn--small">
             Proponer un evento
           </Link>
         }

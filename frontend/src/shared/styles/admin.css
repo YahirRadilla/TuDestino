@@ -32,9 +32,6 @@
   justify-content: flex-end;
   gap: var(--space-3);
 }
-.field__select {
-  padding-right: var(--space-3);
-}
 .field--check {
   gap: 4px;
 }

@@ -66,17 +66,16 @@ async function seedDestinations(client, adminId) {
     const { rows } = await client.query(
       `INSERT INTO destinations
          (slug, name, summary, description, category_id, location, municipality, regulations,
-          care_tips, highlights, is_protected_area, status, created_by, avg_rating, reviews_count)
+          care_tips, highlights, is_protected_area, status, created_by)
        VALUES ($1, $2, $3, $4,
          (SELECT id FROM destination_categories WHERE slug = $5),
-         ST_SetSRID(ST_MakePoint($6, $7), 4326)::geography, $8, $9, $10, $11::jsonb, $12, 'published', $13, $14, $15)
+         ST_SetSRID(ST_MakePoint($6, $7), 4326)::geography, $8, $9, $10, $11::jsonb, $12, 'published', $13)
        ON CONFLICT (slug) DO UPDATE SET
          name = EXCLUDED.name, summary = EXCLUDED.summary, description = EXCLUDED.description,
          category_id = EXCLUDED.category_id, location = EXCLUDED.location,
          municipality = EXCLUDED.municipality, regulations = EXCLUDED.regulations,
          care_tips = EXCLUDED.care_tips, highlights = EXCLUDED.highlights,
-         is_protected_area = EXCLUDED.is_protected_area, avg_rating = EXCLUDED.avg_rating,
-         reviews_count = EXCLUDED.reviews_count, status = 'published', deleted_at = NULL
+         is_protected_area = EXCLUDED.is_protected_area, status = 'published', deleted_at = NULL
        RETURNING id`,
       [
         d.slug,
@@ -92,8 +91,6 @@ async function seedDestinations(client, adminId) {
         JSON.stringify(d.highlights),
         d.is_protected_area,
         adminId,
-        d.avg_rating,
-        d.reviews_count,
       ],
     );
     const destinationId = rows[0].id;

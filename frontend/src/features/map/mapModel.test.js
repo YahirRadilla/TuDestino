@@ -44,7 +44,7 @@ describe('markers', () => {
     expect(destination.lines).toEqual(['4.8 · 12 reseñas', 'Playa']);
   });
 
-  it('says so when a destination has no reviews yet', () => {
+  it('omits the rating line when a destination has no real reviews', () => {
     const fresh = destinationMarker({
       ...{ slug: 'x', name: 'X' },
       avg_rating: 0,
@@ -52,7 +52,7 @@ describe('markers', () => {
       category: { slug: 'a', name: 'A' },
       location: { lat: 1, lng: 2 },
     });
-    expect(fresh.lines[0]).toBe('Sin reseñas todavía');
+    expect(fresh.lines).toEqual(['A']);
   });
 
   it('builds a public report pin that is marked approximate, with month only and no link', () => {

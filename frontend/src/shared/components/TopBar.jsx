@@ -38,7 +38,9 @@ export default function TopBar() {
             </Link>
           ))}
         </nav>
-        <div className="topbar__search">{pathname !== '/' && <SearchBar variant="compact" />}</div>
+        <div className="topbar__search">
+          <SearchBar variant="compact" />
+        </div>
         <div className="topbar__actions">
           <InstallButton variant="compact" />
           {user && <NotificationsButton />}

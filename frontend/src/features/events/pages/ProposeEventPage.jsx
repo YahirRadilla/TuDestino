@@ -57,6 +57,7 @@ export default function ProposeEventPage() {
           <EventForm
             key={round}
             idPrefix="proposal"
+            showMap
             submitLabel="Enviar propuesta"
             busyLabel="Enviando…"
             onSubmit={submit}

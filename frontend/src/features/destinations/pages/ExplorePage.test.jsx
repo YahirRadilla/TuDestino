@@ -42,6 +42,8 @@ describe('ExplorePage', () => {
     expect(screen.getByText('Cargando destinos…')).toBeInTheDocument();
     expect(await screen.findByText('Playa Uno')).toBeInTheDocument();
     expect(screen.queryByText(/mostramos destinos de ejemplo/)).not.toBeInTheDocument();
+    expect(screen.queryByRole('link', { name: 'Eventos' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Cerca de mí' })).not.toBeInTheDocument();
   });
 
   it('shows the empty state when the API returns no destinations', async () => {
@@ -67,28 +69,6 @@ describe('ExplorePage', () => {
     expect(await screen.findByText('No pudimos cargar los destinos')).toBeInTheDocument();
     await userEvent.click(screen.getByRole('button', { name: /reintentar/i }));
     expect(await screen.findByText('Playa Uno')).toBeInTheDocument();
-  });
-
-  it('orders by proximity after the user allows "Cerca de mí"', async () => {
-    const getCurrentPosition = vi.fn((success) =>
-      success({ coords: { latitude: 24.14, longitude: -110.31 } }),
-    );
-    vi.stubGlobal('navigator', { ...navigator, geolocation: { getCurrentPosition } });
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ data: [], meta: {} }));
-    vi.stubGlobal('fetch', fetchMock);
-    renderPage();
-    await userEvent.click(screen.getByRole('button', { name: 'Cerca de mí' }));
-    await waitFor(() => expect(fetchMock.mock.calls.at(-1)[0]).toContain('near=24.14%2C-110.31'));
-    expect(screen.getByRole('button', { name: 'Cerca de mí' })).toHaveAttribute('aria-pressed', 'true');
-  });
-
-  it('explains what to do when the location permission is denied', async () => {
-    const getCurrentPosition = vi.fn((_success, failure) => failure({ code: 1 }));
-    vi.stubGlobal('navigator', { ...navigator, geolocation: { getCurrentPosition } });
-    vi.stubGlobal('fetch', vi.fn().mockResolvedValue(jsonResponse({ data: [], meta: {} })));
-    renderPage();
-    await userEvent.click(screen.getByRole('button', { name: 'Cerca de mí' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(/Activa el permiso/);
   });
 
   describe('offline, from the copy saved on the device', () => {
@@ -128,21 +108,6 @@ describe('ExplorePage', () => {
       renderPage('/explorar?q=canon');
       expect(await screen.findByText('Cañón Azul')).toBeInTheDocument();
       expect(screen.queryByText('Playa Uno')).not.toBeInTheDocument();
-    });
-
-    it('"Cerca de mí" still orders by distance without any connection', async () => {
-      await visitOnline();
-      const getCurrentPosition = vi.fn((success) =>
-        success({ coords: { latitude: 26.8, longitude: -113.2 } }),
-      );
-      vi.stubGlobal('navigator', { ...navigator, geolocation: { getCurrentPosition } });
-      renderPage();
-      await screen.findByText('Playa Uno');
-      await userEvent.click(screen.getByRole('button', { name: 'Cerca de mí' }));
-      await waitFor(() => {
-        const names = screen.getAllByRole('heading', { level: 3 }).map((h) => h.textContent);
-        expect(names).toEqual(['Cañón Azul', 'Playa Uno']);
-      });
     });
   });
 });

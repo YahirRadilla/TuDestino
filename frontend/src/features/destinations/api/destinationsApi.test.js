@@ -1,4 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { markCatalogStale } from '../../../storage/catalogFreshness.js';
 import { fetchDestination, fetchDestinations, toDestination } from './destinationsApi.js';
 
 const apiItem = {
@@ -15,6 +16,7 @@ const apiItem = {
   images: [{ url: '/img/balandra-1.svg', alt_text: null }],
 };
 
+beforeEach(() => localStorage.clear());
 afterEach(() => vi.unstubAllGlobals());
 
 const stubFetch = (body, status = 200) =>
@@ -68,6 +70,13 @@ describe('fetchDestinations', () => {
   it('rejects an unexpected payload such as an HTML page served by a proxy', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue(new Response('<html></html>')));
     await expect(fetchDestinations({})).rejects.toMatchObject({ kind: 'http' });
+  });
+
+  it('uses a new URL after a write so cached ratings cannot win', async () => {
+    stubFetch({ data: [apiItem], meta: { total: 1 } });
+    markCatalogStale();
+    await fetchDestinations({});
+    expect(String(fetch.mock.calls[0][0])).toContain('_r=');
   });
 });
 

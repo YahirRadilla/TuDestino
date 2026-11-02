@@ -172,7 +172,7 @@ export default function ProfilePage() {
       </nav>
 
       {user && (
-        <button type="button" className="btn btn--ghost btn--block profile__logout" onClick={logout}>
+        <button type="button" className="btn btn--surface btn--block profile__logout" onClick={logout}>
           Cerrar sesión
         </button>
       )}

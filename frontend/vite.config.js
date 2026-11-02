@@ -45,7 +45,16 @@ export default defineConfig({
         devOptions: { enabled: false },
       }),
   ].filter(Boolean),
-  server: { proxy: apiProxy },
+  server: {
+    host: true,
+    proxy: apiProxy,
+    // Docker Desktop on Windows often does not forward filesystem events into the container.
+    // Compose sets CHOKIDAR_USEPOLLING=true for `docker compose watch` / `up`.
+    watch: {
+      usePolling: process.env.CHOKIDAR_USEPOLLING === 'true',
+      interval: 300,
+    },
+  },
   preview: { proxy: apiProxy },
   test: {
     environment: 'jsdom',

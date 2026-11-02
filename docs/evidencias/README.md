@@ -2,9 +2,11 @@
 
 Capturas, videos y reportes de Lighthouse que respaldan cada característica PWA.
 
-## Índice de capturas (regeneradas con el build actual)
+## Índice de capturas
 
 Todas se tomaron con Chrome (Playwright, canal `chrome`) sobre `npm run build && npm run preview`, la API y PostgreSQL locales y solo los datos de desarrollo. Las de móvil usan 360×780 y las de escritorio 1280×800. Las de página larga ocultan la barra inferior y el botón «Reportar» para que no floten a mitad de imagen; las de viewport sí muestran la barra fija, tal como la ve la persona. Los mapas se capturaron solo después de ver teselas de OpenStreetMap (`.leaflet-tile-loaded` > 0), pines y ninguna tesela pendiente. Las capturas `-offline` usan `context.setOffline(true)` tras una visita en línea que llena las cachés; la de «sin teselas» nunca visitó el mapa en línea (`td-tiles-v1` vacía).
+
+> **Nota de la revisión final (2026-11-02):** las capturas `UI_*`, `PWA-08_*`, `PWA-14_cerca-de-mi-1280`, `PWA-15_compartir-destino-*` y `F8_*` se tomaron antes de los últimos ajustes. La versión actual usa tema azul, unifica Inicio y Explorar, no muestra el hero/banner ni el chip «Eventos» ni «Cerca de mí» en el catálogo, oculta las valoraciones sin reseñas reales, retiró el botón de compartir del destino y añadió el selector de mapa a «Proponer un evento». Hay que regenerarlas antes de la entrega.
 
 | Archivo | Rúbrica / requisito | Qué muestra |
 |---|---|---|
@@ -20,8 +22,8 @@ Todas se tomaron con Chrome (Playwright, canal `chrome`) sobre `npm run build &&
 | `PWA-13_enviado-tras-reconectar-*` | PWA-13 | Tras reconectar: «Enviado», folio y código de seguimiento |
 | `PWA-13_seguimiento-1280/360`, `PWA-13_seguimiento-en-revision-1280` | RF22, HU-A04 | Seguimiento por folio + código (reporte anónimo) y su línea de tiempo tras el cambio de estado |
 | `PWA-14_reporte-ubicacion-concedida-*`, `PWA-14_reporte-ubicacion-denegada-360` | PWA-14, RF08 | Paso 2 con ubicación lista (precisión ~18 m, mapa con teselas) y con el permiso denegado |
-| `PWA-14_mapa-mi-ubicacion-1280`, `PWA-14_cerca-de-mi-1280` | PWA-14 | «Mi ubicación» en el mapa y orden «Cerca de mí» |
-| `PWA-15_compartir-destino-*`, `PWA-15_compartir-evento-*` | PWA-15, RF21 | Aviso «Enlace copiado» (fallback de Web Share; en la prueba se quitó `navigator.share` para forzarlo, la hoja nativa requiere un móvil real) |
+| `PWA-14_mapa-mi-ubicacion-1280`, `PWA-14_cerca-de-mi-1280` | PWA-14 | «Mi ubicación» en el mapa y orden «Cerca de mí» (la segunda es histórica: hoy el catálogo ya no ofrece esa opción) |
+| `PWA-15_compartir-destino-*` (histórica), `PWA-15_compartir-evento-*` | PWA-15, RF21 | Aviso «Enlace copiado» (fallback de Web Share; en la prueba se quitó `navigator.share` para forzarlo, la hoja nativa requiere un móvil real). La app actual comparte solo eventos |
 | `PWA-16_campana-*`, `PWA-16_bandeja-*` | PWA-16, RF22 | Campana con 1 sin leer y bandeja con «Tu reporte … cambió de estado» |
 | `PWA-16_perfil-avisos-*` | PWA-16 | Perfil con el interruptor «Recibir avisos» (apagado: no se concedió el permiso en la captura) |
 | `F7_*` | RF10–RF16, HU-A02–A08 | Panel de autoridad; ver la tabla de la sección F7 |
@@ -73,13 +75,13 @@ Video corto (`PWA-08_offline-demo.mp4`) y capturas:
 2. Buscar “espiritu” sin acento: aparece “Isla Espíritu Santo” (`PWA-08_busqueda-offline.png`).
 3. Abrir un destino visto antes: detalle completo; las reseñas dicen que necesitan conexión (`PWA-08_detalle-offline.png`).
 4. `/eventos` (lista y calendario) y `/educacion` con búsqueda (`PWA-08_eventos-offline.png`, `PWA-08_educacion-offline.png`).
-5. “Cerca de mí” (con permiso de ubicación): la lista se ordena con distancias sin conexión (`PWA-08_cerca-de-mi-offline.png`, evidencia también de PWA-14).
+5. En `/mapa`, «Mi ubicación» (con permiso) ordena los destinos cercanos sin conexión (`PWA-14_mapa-mi-ubicacion-1280.png`; la antigua captura `PWA-08_cerca-de-mi-offline.png` corresponde a la versión anterior de Explorar).
 6. Con sesión y sin conexión, el botón “Asistiré” aparece deshabilitado con el aviso “Necesitas conexión…” (`PWA-08_asistencia-offline.png`).
 
 ### PWA-14 y PWA-15
 
-- `PWA-14_cerca-de-mi.png`: lista ordenada por distancia (online y offline).
-- `PWA-15_compartir-evento.png`: hoja de compartir del móvil (o el aviso “Enlace copiado” en escritorio) en un destino y en un evento. Requiere HTTPS o `localhost` y, para la hoja nativa, un móvil real.
+- `PWA-14_mapa-mi-ubicacion.png`: mapa centrado en la ubicación y destinos ordenados por distancia (online y offline).
+- `PWA-15_compartir-evento.png`: hoja de compartir del móvil (o el aviso «Enlace copiado» en escritorio) en un evento. El botón se retiró del detalle de destino. Requiere HTTPS o `localhost` y, para la hoja nativa, un móvil real.
 
 ## Qué capturar para los reportes (F5)
 

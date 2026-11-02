@@ -29,6 +29,19 @@ services:
     volumes:
       - ./backend:/app
       - /app/node_modules
+    develop:
+      watch:
+        - action: sync
+          path: ./backend
+          target: /app
+          ignore:
+            - node_modules/
+            - uploads/
+            - .env
+        - action: rebuild
+          path: ./backend/package.json
+        - action: rebuild
+          path: ./backend/package-lock.json
     depends_on:
       db:
         condition: service_healthy
@@ -38,11 +51,27 @@ services:
     command: npm run dev -- --host 0.0.0.0
     environment:
       VITE_API_URL: ${VITE_API_URL:-http://localhost:3000/api/v1}
+      CHOKIDAR_USEPOLLING: 'true'
     ports:
       - '5173:5173'
     volumes:
       - ./frontend:/app
       - /app/node_modules
+    develop:
+      watch:
+        - action: sync
+          path: ./frontend
+          target: /app
+          ignore:
+            - node_modules/
+            - dist/
+            - dev-dist/
+            - coverage/
+            - .vite/
+        - action: rebuild
+          path: ./frontend/package.json
+        - action: rebuild
+          path: ./frontend/package-lock.json
     depends_on:
       - api
 

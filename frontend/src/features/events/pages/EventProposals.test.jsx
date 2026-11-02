@@ -8,6 +8,10 @@ import { apiError, json, session, stubApi, testUser } from '../../../test/apiStu
 import MyProposalsPage from './MyProposalsPage.jsx';
 import ProposeEventPage from './ProposeEventPage.jsx';
 
+vi.mock('../../map/components/LazyMapView.jsx', async () => ({
+  default: (await import('../../../test/fakeMapView.jsx')).default,
+}));
+
 const routes = [
   <Route key="login" path="/login" element={<p>Pantalla de login</p>} />,
   <Route
@@ -97,6 +101,23 @@ describe('propose an event (RF20)', () => {
       'href',
       '/perfil/propuestas',
     );
+  });
+
+  it('lets the person choose the location by tapping the map', async () => {
+    const stub = signedIn({
+      'POST /events': () => json({ data: { id: 'e-9', title: 'Limpieza de Balandra', status: 'pending' } }, 201),
+    });
+    renderWithAuth(routes, { route: '/eventos/proponer' });
+    await fill();
+    await userEvent.click(screen.getByRole('button', { name: 'tocar mapa' }));
+    expect(screen.getByLabelText(/Latitud/)).toHaveValue('24.12346');
+    expect(screen.getByLabelText(/Longitud/)).toHaveValue('-110.98765');
+    await userEvent.click(screen.getByRole('button', { name: 'Enviar propuesta' }));
+    await screen.findByText('¡Gracias! Recibimos tu propuesta');
+    expect(stub.calls.find((c) => c.method === 'POST' && c.path === '/events').body).toMatchObject({
+      lat: 24.12346,
+      lng: -110.98765,
+    });
   });
 
   it('lets the person propose another one with a clean form', async () => {

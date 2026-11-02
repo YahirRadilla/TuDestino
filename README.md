@@ -6,13 +6,14 @@ La fuente única de verdad del proyecto es [`CLAUDE.md`](CLAUDE.md).
 ## Requisitos
 
 - Node.js 20 o superior
-- Docker (opcional, para `docker compose up`)
+- Docker (opcional, para `docker compose watch`)
 
 ## Comandos
 
 | Tarea | Comando |
 |---|---|
-| Entorno completo (db, api, web) | `docker compose up` |
+| Entorno completo con recarga en vivo (db, api, web) | `docker compose watch` |
+| Entorno completo sin recarga automática | `docker compose up` |
 | API en desarrollo | `cd backend && npm install && npm run dev` |
 | Web en desarrollo | `cd frontend && npm install && npm run dev` |
 | Pruebas | `npm test` (en `backend/` y en `frontend/`) |
@@ -20,7 +21,21 @@ La fuente única de verdad del proyecto es [`CLAUDE.md`](CLAUDE.md).
 | Build del frontend | `cd frontend && npm run build && npm run preview` |
 | Regenerar íconos e ilustraciones | `cd frontend && npm run assets` |
 
-Copia `.env.example` a `.env` antes de levantar con Docker (las variables de reportes de F5 se documentan en su sección). El service worker solo se registra en el build de producción (`npm run build && npm run preview`).
+Define las variables en un `.env` local antes de levantar con Docker (no hay `.env.example` versionado; las de reportes de F5 y push de F9 se documentan en sus secciones). Para ver los cambios del código en tiempo real usa `docker compose watch`: sincroniza `backend/` y `frontend/` con los contenedores y reconstruye la imagen si cambian las dependencias. El servicio web define `CHOKIDAR_USEPOLLING=true` para que Vite detecte los cambios también en Docker Desktop sobre Windows. El service worker solo se registra en el build de producción (`npm run build && npm run preview`).
+
+## Revisión final de interfaz y datos (2026-11-02)
+
+Estos ajustes se aplicaron después de las capturas de `docs/evidencias`; hay que regenerar las que muestran la interfaz anterior.
+
+- **Tema azul.** La navegación, los acentos, los botones principales y los pines de destino usan la paleta azul (`#1f4fff` en claro y `#3f63ff` en oscuro); se retiraron los acentos rosas.
+- **Inicio = Explorar.** `/` reexporta la pantalla de catálogo y `/explorar` sigue existiendo. Se mantiene la búsqueda en la barra superior y en la pantalla; se retiraron el hero, «Viaja con cuidado», el banner y el chip «Eventos».
+- **Catálogo y reseñas reales.** Se retiró «Cerca de mí» de Explorar (sigue disponible como «Mi ubicación» en `/mapa`). Las tarjetas y el detalle ocultan promedio y número de reseñas cuando `reviews_count` es `0`; no hay texto de relleno ni botón de compartir dentro del destino. Los seeds ya no cargan valoraciones de ejemplo.
+- **Frescura tras reseñar.** `src/storage/catalogFreshness.js` cambia la revisión del catálogo y `destinationsApi` añade `_r` a las URLs públicas; al guardar una reseña, la siguiente lectura de Explore y del detalle evita la copia vieja del navegador y del service worker.
+- **Mapa.** Controles y filtros alineados a la izquierda, sin el enlace «Ir a la lista de lugares»; los selectores usan una flecha propia separada del borde y el texto de ayuda tiene más espacio. Los pines de destino son azules. El mapa público sigue mostrando solo reportes resueltos de tipos no sensibles.
+- **Educación.** Quedan solo los filtros por tipo `Todo`, `Artículos`, `Videos` y `Enlaces`; se retiró el filtro por categoría.
+- **Reportes.** Se agregó «Otro» (`otro`, no sensible) a los tipos del frontend, del respaldo local y del seed.
+- **Eventos y botones.** «Proponer un evento» incluye un selector de mapa: al tocar o mover el pin se llenan latitud y longitud (también se pueden escribir). «Proponer un evento» y «Cerrar sesión» usan `btn--surface` (fondo blanco, borde y sombra) para que se lean como botones.
+- **Docker.** `docker compose watch` sincroniza `backend/` y `frontend/`, y reconstruye la imagen si cambian `package.json`/`package-lock.json`. `CHOKIDAR_USEPOLLING=true` y `server.watch.usePolling` hacen que Vite detecte cambios en Docker Desktop sobre Windows.
 
 ## Base de datos, migraciones y seeds (Sprint 2)
 
@@ -66,7 +81,7 @@ Endpoints nuevos (bajo `/api/v1`; `U` = requiere sesión de cualquier rol):
 | `GET /events/:id` | Detalle de un evento publicado (también pasados, para que un enlace compartido siga funcionando) |
 | `PUT` / `DELETE /events/:id/attendance` (U) | «Asistiré»; idempotente. `409 EVENT_NOT_OPEN` si el evento ya terminó, `404` si no está publicado |
 
-- `avg_rating`, `reviews_count` y `favorites_count` se **recalculan desde la tabla** en la misma transacción que la escritura, bloqueando la fila del destino con `FOR UPDATE`: no se incrementan, así que no se desfasan con escritores concurrentes. Consecuencia: los contadores sembrados de ejemplo (p. ej. 342 reseñas) se reemplazan por el conteo real en cuanto alguien reseña ese destino; `npm run seed` los restablece.
+- `avg_rating`, `reviews_count` y `favorites_count` se **recalculan desde la tabla** en la misma transacción que la escritura, bloqueando la fila del destino con `FOR UPDATE`: no se incrementan, así que no se desfasan con escritores concurrentes. Los seeds ya no cargan valoraciones ni conteos de ejemplo: solo se muestran reseñas reales. La migración `1760600000008_real_review_totals` corrige bases existentes recalculando esos agregados desde `reviews`.
 - Caché HTTP: lecturas públicas con `Cache-Control: public, max-age=60, stale-while-revalidate=300` y ETag (`304`); eventos con sesión opcional devuelven `attending` con `Cache-Control: private, no-store` y `Vary: Authorization`; todo lo personal y los errores van con `no-store`.
 - Frontend: IndexedDB (`idb`) en `src/storage/db.js` con migraciones por versión; el catálogo visto en línea se espeja y se busca/filtra localmente sin acentos cuando no hay red, con el aviso «Sin conexión · mostrando datos guardados» y la fecha de sincronización. El service worker (`src/sw.js`, decisiones puras en `src/pwa/swRouting.js`) usa stale-while-revalidate para las lecturas públicas, cache-first con expiración para imágenes y red directa para autenticación, `/me`, escrituras y todo lo que lleve credenciales.
 - Despliegue: el iframe de video de Educación necesita permitir `frame-src https://www.youtube-nocookie.com https://player.vimeo.com` si el host del frontend define una Content-Security-Policy.
@@ -139,7 +154,7 @@ Endpoints nuevos (bajo `/api/v1`; todos públicos, un visitante puede reportar y
 | `POST /reports` | `multipart/form-data`: `type`, `description` (10–2000), `lat`, `lng`, `accuracy_m`?, `destination_slug`?, `occurred_at`? (no futuro), `anonymous` (por defecto `true`), `client_uuid` (obligatorio) y hasta 4 archivos `photos`. `201` con `folio` y `tracking_code` (una sola vez); `200` con `replayed: true` y `tracking_code: null` si el `client_uuid` ya existe |
 | `POST /reports/track` | JSON `{ folio, code }`. Devuelve estado e historial (`from_status`, `to_status`, `note`, `created_at`), sin autor ni evidencias. `404 REPORT_NOT_FOUND` idéntico para folio inexistente y código erróneo |
 
-Variables nuevas del backend (validadas con zod; ver `backend/src/config/env.js`). No hay `.env.example` en esta fase: se documentan aquí.
+Variables nuevas del backend (validadas con zod; ver `backend/src/config/env.js`). No hay `.env.example` versionado: las variables se documentan aquí.
 
 | Variable | Por defecto | Notas |
 |---|---|---|
@@ -213,17 +228,17 @@ Endpoints (todos bajo `/api/v1`, `Cache-Control: private, no-store`, límite de 
 
 ## Mapa (Sprint 8 · F8)
 
-Pantallas: `/mapa` (público), `/admin/mapa` (autoridad y admin), mini-mapa en `/admin/reportes/:id` y selector de ubicación en el formulario de reporte (paso 2) y en el de destinos.
+Pantallas: `/mapa` (público), `/admin/mapa` (autoridad y admin), mini-mapa en `/admin/reportes/:id` y selector de ubicación en el formulario de reporte (paso 2), en el de destinos y en «Proponer un evento» (el formulario de administración de eventos conserva latitud y longitud manuales).
 
-### Decisión: Leaflet + OpenStreetMap (cierra D-03 para esta fase)
+### Decisión: Leaflet + OpenStreetMap (ADR-09)
 
-CLAUDE.md deja D-03 abierta con **Google Maps** como valor por defecto. El equipo decidió usar **Leaflet + OpenStreetMap** porque Google exige una API key con facturación que no existe en el proyecto y sus términos no permiten guardar teselas sin conexión; con Leaflet todo es verificable y funciona offline de forma parcial. El equipo debe trasladar la decisión a la sección 21 de CLAUDE.md (esta fase no lo edita). Cambiar de proveedor es barato: solo `features/map/components/MapView.jsx` (y `SafeMapContainer.jsx`) conocen Leaflet; el resto habla con `MapView` por props (`markers`, `center`, `zoom`, `fitKey`, `selectedId`, `userPosition`, `picked`, `onPick`, `onSelect`, `offline`).
+El equipo decidió usar **Leaflet + OpenStreetMap** porque Google exige una API key con facturación que no existe en el proyecto y sus términos no permiten guardar teselas sin conexión; con Leaflet todo es verificable y funciona offline de forma parcial. La decisión quedó registrada en `CLAUDE.md` §21 como ADR-09. Cambiar de proveedor es barato: solo `features/map/components/MapView.jsx` (y `SafeMapContainer.jsx`) conocen Leaflet; el resto habla con `MapView` por props (`markers`, `center`, `zoom`, `fitKey`, `selectedId`, `userPosition`, `picked`, `onPick`, `onSelect`, `offline`).
 
 - **Atribución y política de OSM.** Se muestra «© OpenStreetMap contributors» con enlace a su licencia. Se usa el servidor estándar `tile.openstreetmap.org` con las cabeceras normales del navegador (sin `User-Agent` falso ni Referer vaciado), sin descarga masiva ni precarga: solo se piden las teselas que el usuario ve y el service worker guarda **solo las ya visitadas** (máx. 300, 7 días, solo respuestas 0/200). Para producción con tráfico real conviene un proveedor de teselas propio o contratado (la política de OSM no es para uso intensivo).
 - **Paquetes.** `leaflet@1.9`, `react-leaflet@4.2` (compatible con React 18; la v5 exige React 19), `@react-leaflet/core@2.1` y `leaflet.markercluster@1.5`. Para el agrupamiento se evaluó `react-leaflet-cluster`: la v2 (compatible con react-leaflet 4) es CommonJS con `require` de PNG y CSS y reasigna los íconos por defecto de Leaflet; las v3+ requieren react-leaflet 5. Por eso se usa directamente `leaflet.markercluster` (el plugin mantenido que ambas envuelven) con una capa propia de ~50 líneas. El plugin extiende el `L` global, que se asigna en un módulo previo (`leafletGlobal.js`).
 - **`SafeMapContainer`.** Sustituye a `MapContainer` de react-leaflet porque este crea el mapa en un *ref callback*: si React oculta y vuelve a mostrar un árbol bajo `Suspense` (p. ej. se pulsa «Ver detalle» y se vuelve atrás antes de que cargue la página), crea un segundo mapa sobre el mismo elemento («Map container is already initialized») y la pantalla queda en blanco. Se reprodujo en el navegador y hay una prueba de regresión. También cancela el temporizador de animación de zoom de Leaflet al desmontar.
 - **Carga diferida.** `/mapa`, `/admin/mapa` y los mapas incrustados cargan el chunk `MapView` (Leaflet + plugin + CSS) bajo demanda; no forma parte del bundle inicial.
-- **Íconos.** SVG propios (`markerIcons.js`), sin las imágenes por defecto de Leaflet: destino = gota rosa con estrella; reporte público = insignia cuadrada con **anillo discontinuo** («aproximado») y un glifo y color por tipo; estados del mapa de autoridad = círculo con glifo por estado. La forma y el glifo distinguen, no solo el color.
+- **Íconos.** SVG propios (`markerIcons.js`), sin las imágenes por defecto de Leaflet: destino = gota azul (`#1f4fff`) con estrella; reporte público = insignia cuadrada con **anillo discontinuo** («aproximado») y un glifo y color por tipo; estados del mapa de autoridad = círculo con glifo por estado. La forma y el glifo distinguen, no solo el color.
 
 ### Privacidad del mapa (RNF03, ADR-04)
 
@@ -241,7 +256,7 @@ CLAUDE.md deja D-03 abierta con **Google Maps** como valor por defecto. El equip
 
 ### Accesibilidad
 
-El mapa es una región con nombre; los pines **no** son paradas de tabulación (ni los agrupamientos) y hay un enlace «Ir a la lista de lugares». La lista equivalente repite cada punto con «En el mapa» (abre su popup y centra) y «Ver detalle». Los controles de zoom, el cierre del popup y los selectores están en español. En escritorio el panel (capas, filtros, lista) va a la izquierda del mapa.
+El mapa es una región con nombre; los pines **no** son paradas de tabulación (ni los agrupamientos). La lista equivalente repite cada punto con «En el mapa» (abre su popup y centra) y «Ver detalle». Los controles de zoom, el cierre del popup y los selectores están en español. En escritorio el panel (capas, filtros, lista) va a la izquierda del mapa y los controles/filtros se alinean a la izquierda; los selectores dejan espacio para su flecha y no tocan el borde derecho.
 
 ### Pendiente / límites (F8)
 
@@ -255,7 +270,7 @@ Cubre PWA-16, RF12 (aviso al cambiar el estado), RF22, HU-A04 y HU-T07 (recordat
 
 ### Variables de entorno
 
-No hay `.env.example` (decisión del equipo): se documentan aquí. Generar un par propio con `npm run vapid:generate` (en `backend/`); **nunca** se versiona la clave privada.
+No hay `.env.example` versionado (decisión del equipo): se documentan aquí. Generar un par propio con `npm run vapid:generate` (en `backend/`); **nunca** se versiona la clave privada.
 
 | Variable | Por defecto | Notas |
 |---|---|---|

@@ -91,9 +91,6 @@ export default function ReviewsSection({ destination, onTotals }) {
             : list.error?.message}
         </ErrorState>
       )}
-      {list.status === 'ready' && list.data.reviews.length === 0 && (
-        <p className="muted">Todavía no hay reseñas. Sé la primera persona en opinar.</p>
-      )}
       {list.status === 'ready' && list.data.reviews.length > 0 && (
         <>
           <ReviewList reviews={list.data.reviews} />

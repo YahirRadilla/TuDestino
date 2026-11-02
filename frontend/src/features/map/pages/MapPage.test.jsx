@@ -86,14 +86,12 @@ describe('map page (HU-T13)', () => {
     expect(within(reportItem).queryByRole('link')).not.toBeInTheDocument();
   });
 
-  it('has a skip link to the list and an accessible map region', async () => {
+  it('keeps the list beside an accessible map region without a skip-link button', async () => {
     renderPage();
     await screen.findAllByTestId('pin');
-    expect(screen.getByRole('link', { name: 'Ir a la lista de lugares' })).toHaveAttribute(
-      'href',
-      '#map-list',
-    );
+    expect(screen.queryByRole('link', { name: 'Ir a la lista de lugares' })).not.toBeInTheDocument();
     expect(screen.getByRole('region', { name: /Mapa de destinos y reportes/ })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Lugares en el mapa' })).toBeInTheDocument();
   });
 
   it('hides a layer with its checkbox', async () => {

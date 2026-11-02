@@ -30,6 +30,7 @@ const API_TYPES = [
   { slug: 'animal-varado', name: 'Animal varado' },
   { slug: 'contaminacion', name: 'Contaminación' },
   { slug: 'actividad-sospechosa', name: 'Actividad sospechosa' },
+  { slug: 'otro', name: 'Otro' },
 ];
 
 const created = {
@@ -120,11 +121,12 @@ describe('ReportForm steps', () => {
     expect(screen.getByText(/Basura, derrames/)).toBeInTheDocument();
   });
 
-  it('falls back to the bundled types without a connection', async () => {
+  it('falls back to the bundled types without a connection, including "Otro"', async () => {
     setOnline(false);
     stubApi({});
     renderForm();
-    await waitFor(() => expect(screen.getAllByRole('radio')).toHaveLength(4));
+    await waitFor(() => expect(screen.getAllByRole('radio')).toHaveLength(5));
+    expect(screen.getByRole('radio', { name: /Otro/ })).toBeInTheDocument();
   });
 
   it('keeps the draft in SessionStorage and restores it', async () => {

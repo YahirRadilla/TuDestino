@@ -4,12 +4,12 @@ Se completa a medida que avanzan los sprints. Estados: Pendiente · Parcial · H
 
 | RF | Requisito | Pantalla | Endpoint | Estado |
 |---|---|---|---|---|
-| RF01 | Consultar destinos | `/`, `/destinos/:slug` | `GET /destinations`, `GET /destinations/:slug` | Hecho (API + respaldo local sin conexión) |
+| RF01 | Consultar destinos | `/`, `/explorar`, `/destinos/:slug` | `GET /destinations`, `GET /destinations/:slug` | Hecho (Inicio y Explorar comparten catálogo; API + respaldo local sin conexión) |
 | RF02 | Consultar playas y ANP | `/explorar` | `GET /destinations?category=`, `GET /destination-categories` | Hecho (API + respaldo local sin conexión) |
-| RF03 | Consultar educación ambiental | `/educacion` | `GET /edu-contents`, `GET /edu-categories` | Hecho (lista con búsqueda y filtros por categoría y tipo, artículo/video/enlace, sin conexión desde IndexedDB) |
+| RF03 | Consultar educación ambiental | `/educacion` | `GET /edu-contents`, `GET /edu-categories` | Hecho (búsqueda y filtros por tipo: Todo, Artículos, Videos y Enlaces; sin conexión desde IndexedDB) |
 | RF04 | Eventos (lista y calendario) | `/eventos`, `/eventos/:id` | `GET /events`, `GET /events/:id` | Hecho (lista, calendario mensual accesible, detalle; sin conexión desde IndexedDB) |
 | RF05 | Crear reportes (turistas y ciudadanos, también sin cuenta) | `/reportar` (3 pasos), `/reportar/pendientes` | `POST /reports` (multipart, idempotente por `client_uuid`) | Hecho |
-| RF06 | Tipos de reporte (tortuga anidando, animal varado, contaminación, actividad sospechosa) | `/reportar` paso 1 | `GET /report-types` (solo slug y nombre; `is_sensitive` no se expone) | Hecho (lista local de respaldo sin conexión) |
+| RF06 | Tipos de reporte (tortuga anidando, animal varado, contaminación, actividad sospechosa y «Otro» adicional) | `/reportar` paso 1 | `GET /report-types` (solo slug y nombre; `is_sensitive` no se expone) | Hecho (lista local de respaldo sin conexión, también con «Otro») |
 | RF07 | Fotos de evidencia (hasta 4 de 5 MB) | `/reportar` paso 2 | `POST /reports` (campo `photos`; magic bytes, re-codificación WebP sin EXIF; `report_evidences`) | Hecho (la autoridad las consulta en F7; no hay ruta pública de evidencias) |
 | RF08 | Ubicación aproximada | `/reportar` paso 2 (Geolocation, coordenadas a mano o destino cercano) | `POST /reports` (`lat`, `lng`, `accuracy_m`, `destination_slug`) | Hecho |
 | RF09 | Reporte anónimo | `/reportar` paso 3 (interruptor, activo por defecto sin sesión) | `POST /reports` (`anonymous=true` ignora el token: `reporter_id` NULL; sin IP ni user-agent) | Hecho |
@@ -21,10 +21,10 @@ Se completa a medida que avanzan los sprints. Estados: Pendiente · Parcial · H
 | RF15 | Administrar contenido educativo | `/admin/educacion` | `GET`/`POST /admin/edu-contents`, `GET`/`PATCH`/`DELETE /admin/edu-contents/:id` | Hecho (publicar/despublicar, borrado lógico) |
 | RF16 | Usuarios y permisos | `/login`, `/registro`, `/admin/usuarios` (solo `admin`) | `POST /auth/*`, `GET`/`POST /admin/users`, `PATCH /admin/users/:id`, `POST /admin/users/:id/invitation`, `GET /admin/areas`, `requireRole`/`requireCurrentRole` | Hecho (alta por invitación, rol/área, desactivar revoca sesiones, siempre queda un admin activo) |
 | RF17 | Ver y editar perfil | `/perfil`, `/perfil/eventos`, `/perfil/resenas` | `GET /me`, `PATCH /me`, `GET /me/events`, `GET /me/reviews` | Hecho (nombre y avatar, “Mis eventos”, “Mis reseñas”, “Mis favoritos”) |
-| RF18 | Búsqueda | `/explorar`, `/educacion` | `GET /destinations?q=` y `near=` (FTS español), `GET /edu-contents?q=` | Hecho (API; sin conexión: búsqueda local sin acentos y "Cerca de mí" por Haversine sobre IndexedDB) |
+| RF18 | Búsqueda | `/explorar`, `/educacion`, `/mapa` | `GET /destinations?q=` (y `near=`, aún en la API), `GET /edu-contents?q=` | Hecho (API; sin conexión: búsqueda local sin acentos. «Mi ubicación» y el orden por distancia están en `/mapa`; Explorar ya no muestra «Cerca de mí») |
 | RF19 | Favoritos | `/favoritos`, corazón en tarjetas y detalle | `GET /me/favorites`, `PUT`/`DELETE /me/favorites/:slug` | Hecho (con sesión: servidor + copia en IndexedDB, UI optimista con reversión; sin sesión: IndexedDB y fusión sin duplicados al iniciar sesión) |
-| RF20 | Organizar eventos (D-01) | `/eventos`, `/eventos/proponer`, `/perfil/propuestas`, `/admin/eventos` (cola de moderación) | `PUT`/`DELETE /events/:id/attendance`, `POST /events` (propuesta `pending`), `GET /me/events/proposed`, `PATCH /admin/events/:id/moderation` (`approve`/`reject`/`cancel`) | Hecho (propuesta → moderación → público; el rechazo guarda el motivo y lo ve quien propuso) |
-| RF21 | Compartir destinos y eventos | `/destinos/:slug`, `/eventos`, `/eventos/:id` |  | Hecho (Web Share + copiar enlace, en destinos y eventos) |
+| RF20 | Organizar eventos (D-01) | `/eventos`, `/eventos/proponer`, `/perfil/propuestas`, `/admin/eventos` (cola de moderación) | `PUT`/`DELETE /events/:id/attendance`, `POST /events` (propuesta `pending`), `GET /me/events/proposed`, `PATCH /admin/events/:id/moderation` (`approve`/`reject`/`cancel`) | Hecho (propuesta → moderación → público; la propuesta incluye selector de mapa; el rechazo guarda el motivo y lo ve quien propuso) |
+| RF21 | Compartir destinos y eventos | `/eventos`, `/eventos/:id` |  | Parcial (Web Share + copiar enlace en eventos; el botón de compartir se retiró del detalle de destino en la revisión de interfaz) |
 | RF22 | Seguimiento de reporte por folio | `/seguimiento` (línea de tiempo accesible) | `POST /reports/track` (folio + código; 404 idéntico si falla cualquiera) | Hecho (consulta por folio; F9: «Recibir avisos de este reporte» con `POST /reports/follow` y push al cambiar el estado) |
 | RF23 | Reportes sin conexión con envío diferido | `/reportar`, `/reportar/pendientes` | `POST /reports` (reintentos idempotentes por `client_uuid`) | Hecho (outbox en IndexedDB + Background Sync + respaldo `online`/apertura/botón) |
 
@@ -44,10 +44,10 @@ Se completa a medida que avanzan los sprints. Estados: Pendiente · Parcial · H
 
 | HU | Historia | Pantalla | Endpoint | Pruebas |
 |---|---|---|---|---|
-| HU-T05 | Ver destinos (promedio, detalle con reseñas, filtro por categoría) | `/`, `/explorar`, `/destinos/:slug` | `GET /destinations`, `GET /destinations/:slug`, `GET /destinations/:slug/reviews` | `api.integration`, `engagement.integration` (reseñas sin autor), `DestinationDetailPage.test`, `ExplorePage.test` (incluye sin conexión) |
+| HU-T05 | Ver destinos (promedio, detalle con reseñas, filtro por categoría) | `/`, `/explorar`, `/destinos/:slug` (Inicio y Explorar comparten catálogo) | `GET /destinations`, `GET /destinations/:slug`, `GET /destinations/:slug/reviews` | `api.integration`, `engagement.integration` (reseñas sin autor), `DestinationDetailPage.test`, `ExplorePage.test` (incluye sin conexión; promedio y conteo solo con reseñas reales y ocultos si `reviews_count` es 0) |
 | HU-T06 | Ver eventos en lista y calendario | `/eventos`, `/eventos/:id` | `GET /events`, `GET /events/:id` | `engagement.integration`, `calendar.test`, `EventsPage.test`, `EventDetailPage.test` |
 | HU-T07 | Asistir a eventos y “Mis eventos” | `/eventos`, `/perfil/eventos` | `PUT`/`DELETE /events/:id/attendance`, `GET /me/events` | `engagement.integration` (idempotencia, 409 `EVENT_NOT_OPEN`, 401), `EventsPage.test` (optimista y reversión), `MyActivityPages.test` |
-| HU-T08 | Educación ambiental con búsqueda y filtros | `/educacion` | `GET /edu-contents`, `GET /edu-categories` | `EducationPage.test`, `mediaEmbed.test` (solo https; `loading="lazy"` en iframes) |
+| HU-T08 | Educación ambiental con búsqueda y filtros | `/educacion` | `GET /edu-contents`, `GET /edu-categories` | `EducationPage.test`, `mediaEmbed.test` (solo https; `loading="lazy"` en iframes). Filtros solo por tipo: Todo, Artículos, Videos y Enlaces |
 | HU-T10 | Perfil: Mis eventos, Mis reseñas, Mis favoritos | `/perfil/*`, `/favoritos` | `GET /me/events`, `GET /me/reviews`, `GET /me/favorites` | `engagement.integration`, `MyActivityPages.test`, `FavoritesPage.test` |
 | HU-T12 | Reseñar (1–5 estrellas, publicación inmediata, autor oculto) | `/destinos/:slug` | `POST /destinations/:slug/reviews` (409 si repite), `PUT /destinations/:slug/reviews/me` (crear o reemplazar) | `engagement.integration` (contadores consistentes con escritores concurrentes, sin `user_id`), `ReviewForm.test`, `ReviewsSection.test` |
 
@@ -70,7 +70,7 @@ Se completa a medida que avanzan los sprints. Estados: Pendiente · Parcial · H
 | HU-A03 | Detalle con galería de evidencias e historial | `/admin/reportes/:id` | `GET /admin/reports/:id`, `GET /admin/reports/:id/evidences/:evidenceId` | `admin.integration` (anónimo ⇒ `reporter: null` y nunca `reporter_id`, evidencia solo autenticada, no sirve la evidencia de otro reporte, sin ruta pública), `ReportDetailPage.test` (blob URL con sesión, revocación al desmontar, lightbox con teclado y foco atrapado), `Modal.test` |
 | HU-A04 | Cambiar estado con nota obligatoria; historial inmutable con fecha y autor | `/admin/reportes/:id` (diálogo) | `PATCH /admin/reports/:id/status` | `admin.integration` (409 `INVALID_TRANSITION`, nota 3–1000, `changed_by`, concurrencia sin pérdida de actualizaciones, `UPDATE`/`DELETE` del historial rechazados, sin ruta para editar el reporte), `reportTransitions.test`, `adminServices.test` (rollback), `StatusChangeModal.test` |
 | HU-A05 | CRUD de destinos (borrado lógico, imágenes, categoría, coordenadas) | `/admin/destinos` | `/admin/destinations` | `admin.integration` (slug único generado, 409 `SLUG_TAKEN`, borrador fuera de lo público, borrado lógico), `adminValidators.test`, `formValidation.test`, `DestinationsAdminPage.test` |
-| HU-A06 | CRUD de eventos; sin fechas pasadas al crear | `/admin/eventos` | `/admin/events`, `PATCH /admin/events/:id/moderation` | `admin.integration` (fecha pasada 400, propuesta → aprobación visible en lo público, rechazo con motivo, 409 al repetir), `eventForm.test`, `EventsAdminPage.test`, `EventProposals.test` |
+| HU-A06 | CRUD de eventos; sin fechas pasadas al crear | `/admin/eventos` | `/admin/events`, `PATCH /admin/events/:id/moderation` | `admin.integration` (fecha pasada 400, propuesta → aprobación visible en lo público, rechazo con motivo, 409 al repetir), `eventForm.test`, `EventsAdminPage.test`, `EventProposals.test` (la propuesta pública permite elegir la ubicación en el mapa; el formulario de administración conserva latitud/longitud manuales) |
 | HU-A07 | CRUD de contenido educativo; se puede despublicar | `/admin/educacion` | `/admin/edu-contents` | `admin.integration` (video sin URL 400, publicar/despublicar, `published_at` estable), `EducationAdminPage.test` |
 | HU-A08 | Gestión de usuarios: alta de administradores, revocar acceso, rol y área | `/admin/usuarios` | `/admin/users`, `/admin/areas` | `admin.integration` (alta sin contraseña en la respuesta + invitación por correo, desactivar revoca todos los refresh tokens, no auto-degradarse, 403 a autoridades), `adminServices.test` (`LAST_ADMIN`, `SELF_PROTECTION`), `UsersAdminPage.test` |
 | HU-T06 / HU-T07 | Eventos en lista y calendario; asistir (solo los `published` son públicos) | `/eventos` | `GET /events` | `admin.integration` (pendientes, rechazados, cancelados y borrados no aparecen), `EventsPage.test` |
@@ -80,22 +80,22 @@ Se completa a medida que avanzan los sprints. Estados: Pendiente · Parcial · H
 
 ## Matriz de características PWA (F4)
 
-La matriz oficial vive en `CLAUDE.md` sección 20 (no se edita desde esta fase). Estado real al cierre de F4, para que el equipo lo traslade:
+La matriz oficial vive en `CLAUDE.md` sección 20; aquí se mantiene el detalle del estado real por fase.
 
 | Ítem | Implementación | Prueba | Evidencia a capturar | Estado |
 |---|---|---|---|---|
 | PWA-05 Almacenamiento local | `frontend/src/storage/db.js` (IndexedDB con `idb`: `destinations`, `events`, `edu`, `favorites`, `outbox`, `meta`; migraciones por versión), `catalogCache.js`, `favoritesStore.js`, LocalStorage (tema, sesión) | `db.test`, `catalogCache.test`, `favoritesStore.test`, Playwright (stores y sincronía) | DevTools > Application > IndexedDB > `tudestino` | Hecho (la `outbox` se usa en F5) |
 | PWA-07 Cache API | `frontend/src/sw.js` + `pwa/swRouting.js`: SWR para lectura pública, CacheFirst + expiración (150/30 días) para imágenes, NetworkOnly para auth/me/escrituras, `cleanupOutdatedCaches`, limpieza de cachés `td-*` | `swRouting.test` (42), Playwright (`td-api-v1`, `td-images-v1`) | DevTools > Application > Cache Storage | Hecho |
 | PWA-08 Offline parcial | Espejo IndexedDB + SWR + shell precacheado + `offline.html`; aviso “Sin conexión · mostrando datos guardados” con fecha | `useRemoteData.test`, `offlineCatalog.test`, `ExplorePage.test`, `EventsPage.test`, `EducationPage.test`, Playwright (`setOffline`) | Video/capturas en modo avión | Hecho para destinos, eventos y educación; reportes en cola llegan en F5 |
-| PWA-14 Geolocation | “Cerca de mí” (Haversine local cuando no hay red) | `useNearMe.test`, `offlineCatalog.test`, `ExplorePage.test`, Playwright | Captura de orden por distancia sin conexión | Hecho en el catálogo; captura de coordenadas del reporte llega en F5 |
-| PWA-15 Web Share | `ShareButton` genérico en destinos y eventos (fallback: copiar enlace) | `EventDetailPage.test`, Playwright | Captura en móvil real | Hecho (verificación manual en móvil pendiente) |
+| PWA-14 Geolocation | «Mi ubicación» en `/mapa` (Haversine local cuando no hay red); el catálogo ya no muestra «Cerca de mí» | `useNearMe.test`, `offlineCatalog.test`, `MapPage.test`, Playwright | Captura de orden por distancia sin conexión | Hecho en el mapa; captura de coordenadas del reporte llega en F5 |
+| PWA-15 Web Share | `ShareButton` en eventos (tarjeta y detalle); fallback: copiar enlace. El botón se retiró de los destinos | `EventDetailPage.test`, Playwright | Captura en móvil real | Parcial (eventos; destinos ya no muestra el botón y la verificación manual en móvil sigue pendiente) |
 
 ## Matriz de características PWA (F5)
 
 | Ítem | Implementación | Prueba | Evidencia a capturar | Estado |
 |---|---|---|---|---|
 | PWA-13 Background Sync | `storage/outbox.js` (cola en IndexedDB con reclamo atómico), `features/reports/reportSender.js` + `reportQueue.js` (el mismo código en la página y en el worker), `pwa/reportSync.js` y listener `sync` (etiqueta `reports-outbox`) en `sw.js`; respaldo sin `SyncManager`: evento `online`, apertura de la app y «Reintentar ahora» (`OutboxSync.jsx`) | `reportSync.test`, `reportQueue.test`, `reportSender.test`, Playwright (etiqueta registrada, envío tras recuperar la red, una sola fila) | DevTools > Application > Background services > Background sync; IndexedDB > `outbox`; video del recorrido | Hecho |
-| PWA-14 Geolocation | `useReportLocation.js` + `LocationPicker.jsx` (permiso, denegado, no disponible, tiempo agotado, sin API; alternativa manual y destino cercano) | `ReportForm.test`, Playwright (permiso concedido y denegado) | Paso 2 con «Ubicación lista» y con el permiso denegado | Hecho (también «Cerca de mí» en el catálogo, F4) |
+| PWA-14 Geolocation | `useReportLocation.js` + `LocationPicker.jsx` (permiso, denegado, no disponible, tiempo agotado, sin API; alternativa manual y destino cercano) | `ReportForm.test`, Playwright (permiso concedido y denegado) | Paso 2 con «Ubicación lista» y con el permiso denegado | Hecho («Cerca de mí» se retiró del catálogo; «Mi ubicación» sigue en `/mapa`) |
 | PWA-05 Almacenamiento local | `outbox` (IndexedDB) y borrador del formulario en SessionStorage (`td:report-draft`) | `outbox.test`, `ReportForm.test` | DevTools > Application > IndexedDB > `outbox` y Session storage | Hecho |
 
 ## Mapa (Sprint 8 · F8)
@@ -107,7 +107,7 @@ La matriz oficial vive en `CLAUDE.md` sección 20 (no se edita desde esta fase).
 | RNF03 / ADR-04 | El mapa público solo muestra reportes resueltos de tipos no sensibles, con ubicación redondeada | `/mapa` | `GET /map/pins` | `map.integration`: la coordenada original **no aparece** en la respuesta (se busca el texto), el redondeo es determinista y el `bbox` se aplica al punto redondeado (no se puede localizar un reporte filtrando por zona), sin descripción, evidencias, autor, folio, `client_uuid` ni uuid real (id opaco = hash), mes y año en lugar de fecha; `mapPins.test` (la consulta solo lee `location` a través de `ST_SnapToGrid`) |
 | RNF05 | Control de acceso en el servidor | `/admin/mapa` | `authenticate` + `requireRole` + `requireCurrentRole` | `map.integration` (401 sin token, 403 a un usuario), `mapPins.test` |
 | PWA-08 | Mapa con funcionamiento offline parcial | `/mapa` | — | `swRouting.test` (teselas OSM, `/map/pins` en SWR, `/admin/map/pins` nunca), `MapPage.test` (puntos del espejo IndexedDB sin conexión), `MapView.test` (aviso sin teselas), `DataNotice.test`, Playwright (`setOffline`: teselas desde `td-tiles-v1`, puntos y lista sin red, fondo neutro con aviso si nunca se visitó) |
-| PWA-14 | Geolocation en el mapa y en los selectores de ubicación | `/mapa`, `/reportar` (paso 2), `/admin/destinos` | — | `MapPage.test`, `LocationPicker.test`, `LocationStep.test`, `DestinationForm.test`, `geo.test` (Haversine), Playwright (permiso concedido y denegado) |
+| PWA-14 | Geolocation en el mapa y en los selectores de ubicación | `/mapa`, `/reportar` (paso 2), `/admin/destinos`, `/eventos/proponer` | — | `MapPage.test`, `LocationPicker.test`, `LocationStep.test`, `DestinationForm.test`, `EventProposals.test`, `geo.test` (Haversine), Playwright (permiso concedido y denegado) |
 
 ## Matriz de características PWA (F8)
 
@@ -115,7 +115,7 @@ La matriz oficial vive en `CLAUDE.md` sección 20 (no se edita desde esta fase).
 |---|---|---|---|---|
 | PWA-07 Cache API | `td-tiles-v1`: `CacheFirst` + `ExpirationPlugin` (300 entradas, 7 días) + `CacheableResponsePlugin` `[0, 200]` para `tile.openstreetmap.org`; `/api/v1/map/pins` entra en la estrategia SWR existente (`td-api-v1`); `/admin/map/pins` es red directa | `swRouting.test`, Playwright (`td-tiles-v1` y `td-api-v1` sin ninguna URL `/admin/`) | DevTools > Application > Cache Storage | Hecho |
 | PWA-08 Offline parcial | Teselas ya visitadas desde caché; sin red los destinos salen del espejo IndexedDB (o de los de ejemplo) y la lista alternativa sigue funcionando; sin teselas, fondo neutro y «Sin conexión: mostrando solo los puntos guardados» | ver arriba | `F8_mapa-offline-*.png`, `PWA-08_*-offline-*.png` | Hecho (los pines de reportes solo si el SWR ya los guardó) |
-| PWA-14 Geolocation | «Mi ubicación» (centra, punto propio y destinos cercanos con distancia) y mapa para elegir la ubicación del reporte y del destino | ver arriba | `F8_mapa-1280.png`, `F8_selector-ubicacion-360.png`, `PWA-14_*.png` | Hecho |
+| PWA-14 Geolocation | «Mi ubicación» (centra, punto propio y destinos cercanos con distancia) y mapa para elegir la ubicación del reporte, del destino y de la propuesta de evento | ver arriba | `F8_mapa-1280.png`, `F8_selector-ubicacion-360.png`, `PWA-14_*.png` | Hecho |
 
 ## Avisos push y Badging API (Sprint 9 · F9)
 

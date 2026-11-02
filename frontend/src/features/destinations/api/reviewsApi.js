@@ -1,4 +1,5 @@
 import { ApiError, apiFetch } from '../../../api/client.js';
+import { markCatalogStale } from '../../../storage/catalogFreshness.js';
 
 export const MAX_COMMENT_LENGTH = 1000;
 
@@ -28,6 +29,8 @@ export async function saveMyReview(slug, { rating, comment }) {
     body: { rating, comment: comment?.trim() || null },
   });
   if (!payload?.data?.id) throw new ApiError('http', 'Respuesta inesperada del servidor.');
+  // The catalog's cached list/detail still has the old average and count.
+  markCatalogStale();
   return {
     review: payload.data,
     totals: { rating: payload.meta?.avg_rating, reviews: payload.meta?.reviews_count },

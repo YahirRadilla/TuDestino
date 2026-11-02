@@ -10,6 +10,7 @@ export const reportTypes = [
   { slug: 'animal-varado', name: 'Animal varado', is_sensitive: false },
   { slug: 'contaminacion', name: 'Contaminación', is_sensitive: false },
   { slug: 'actividad-sospechosa', name: 'Actividad sospechosa', is_sensitive: true },
+  { slug: 'otro', name: 'Otro', is_sensitive: false },
 ];
 
 export const eduCategories = [

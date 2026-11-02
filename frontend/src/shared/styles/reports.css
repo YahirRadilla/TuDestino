@@ -230,10 +230,6 @@
   gap: var(--space-3);
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-.field__select,
-.field__textarea {
-  appearance: auto;
-}
 .field__textarea {
   padding: var(--space-3) var(--space-4);
   resize: vertical;

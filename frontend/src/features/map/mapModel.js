@@ -17,9 +17,9 @@ export function monthLabel(month) {
 }
 
 const ratingLine = (rating, reviews) =>
-  reviews > 0
+  Number(reviews) > 0
     ? `${Number(rating).toFixed(1)} · ${reviews} ${reviews === 1 ? 'reseña' : 'reseñas'}`
-    : 'Sin reseñas todavía';
+    : null;
 
 // From GET /map/pins.
 export function destinationMarker(item) {
@@ -29,7 +29,7 @@ export function destinationMarker(item) {
     variant: 'destination',
     position: { lat: item.location.lat, lng: item.location.lng },
     title: item.name,
-    lines: [ratingLine(item.avg_rating, item.reviews_count), item.category.name],
+    lines: [ratingLine(item.avg_rating, item.reviews_count), item.category.name].filter(Boolean),
     categorySlug: item.category.slug,
     categoryName: item.category.name,
     href: `/destinos/${item.slug}`,

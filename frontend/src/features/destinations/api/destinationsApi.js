@@ -1,7 +1,15 @@
 import { ApiError, apiFetch } from '../../../api/client.js';
 import { mirrorDestinations } from '../../../storage/catalogCache.js';
+import { catalogRevision } from '../../../storage/catalogFreshness.js';
 
 const REGION = 'Baja California Sur';
+
+// A review changes avg_rating/reviews_count. Include the revision in catalog URLs so the browser
+// HTTP cache and the service-worker cache miss once after that write.
+const freshnessParams = () => {
+  const revision = catalogRevision();
+  return revision ? { _r: revision } : {};
+};
 
 // API payload -> the shape the UI components already consume (see data/seed.js).
 // The slug doubles as the stable id so favorites survive switching between API and local data.
@@ -35,7 +43,7 @@ const assertPayload = (payload, isValid) => {
 export async function fetchDestinations({ category, q, near, limit = 50 } = {}, signal) {
   const payload = await apiFetch('/destinations', {
     signal,
-    params: { category, q, near: near && `${near.lat},${near.lng}`, limit },
+    params: { category, q, near: near && `${near.lat},${near.lng}`, limit, ...freshnessParams() },
   });
   assertPayload(payload, (p) => Array.isArray(p?.data));
   void mirrorDestinations(payload.data, { complete: !category && !q && payload.data.length < limit });
@@ -44,7 +52,10 @@ export async function fetchDestinations({ category, q, near, limit = 50 } = {}, 
 
 export async function fetchDestination(slug, signal) {
   try {
-    const payload = await apiFetch(`/destinations/${encodeURIComponent(slug)}`, { signal });
+    const payload = await apiFetch(`/destinations/${encodeURIComponent(slug)}`, {
+      signal,
+      params: freshnessParams(),
+    });
     assertPayload(payload, (p) => p?.data?.slug);
     void mirrorDestinations([payload.data]);
     return toDestination(payload.data);

@@ -1,5 +1,6 @@
 import FormField from '../../auth/components/FormField.jsx';
 import { TextAreaField } from '../../../shared/components/FieldControls.jsx';
+import LocationPicker from '../../map/components/LocationPicker.jsx';
 import { useForm } from '../../../shared/hooks/useForm.js';
 import { emptyEventForm, eventPayload, validateEventForm } from '../eventForm.js';
 
@@ -13,6 +14,7 @@ export default function EventForm({
   submitLabel = 'Guardar',
   busyLabel = 'Guardando…',
   idPrefix = 'event',
+  showMap = false,
   onSubmit,
   onCancel,
 }) {
@@ -22,7 +24,7 @@ export default function EventForm({
     validate: (values) => validateEventForm(values, { isNew }),
     onSubmit: (values) => onSubmit(eventPayload(values)),
   });
-  const { field } = form;
+  const { field, values } = form;
 
   return (
     <form
@@ -49,6 +51,16 @@ export default function EventForm({
         autoComplete="off"
         placeholder="Playa El Tesoro"
       />
+      {showMap && (
+        <LocationPicker
+          value={{ lat: values.lat, lng: values.lng }}
+          onChange={({ lat, lng }) => {
+            form.setValue('lat', String(lat));
+            form.setValue('lng', String(lng));
+          }}
+          label="Mapa para elegir el lugar del evento"
+        />
+      )}
       <div className="form__row">
         <FormField
           {...field('lat')}

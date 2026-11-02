@@ -44,7 +44,8 @@ describe('ReviewsSection', () => {
   it('invites anonymous visitors to sign in instead of showing the form', async () => {
     stubApi({ 'GET /destinations/balandra/reviews': listBody([]) });
     renderSection();
-    expect(await screen.findByText(/Todavía no hay reseñas/)).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Reseñas' })).toBeInTheDocument();
+    expect(screen.queryByText(/Todavía no hay reseñas/)).not.toBeInTheDocument();
     expect(await screen.findByRole('link', { name: 'Inicia sesión' })).toHaveAttribute('href', '/login');
     expect(screen.queryByRole('radio')).not.toBeInTheDocument();
   });
