@@ -1,0 +1,351 @@
+/* App shell: header, floating nav, search, toasts, banners. */
+.app {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.app__main {
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+.app__main--with-nav {
+  padding-bottom: calc(var(--nav-height) + 24px + env(safe-area-inset-bottom));
+}
+
+/* ---------- Logo ---------- */
+.logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--touch);
+  font-weight: 700;
+  font-size: 1.25rem;
+  letter-spacing: -0.02em;
+}
+.logo__mark {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+/* The mark is single-colour line art: flip it to white on the dark theme. */
+:root[data-theme='dark'] .logo__mark {
+  filter: brightness(0) invert(1);
+}
+
+/* ---------- Floating bottom nav (mobile) ---------- */
+.bottom-nav {
+  position: fixed;
+  left: 8px;
+  right: 8px;
+  bottom: calc(10px + env(safe-area-inset-bottom));
+  max-width: 440px;
+  margin-inline: auto;
+  z-index: 50;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  padding: 8px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: 32px;
+  box-shadow: var(--shadow-lg);
+}
+.bottom-nav__item {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  gap: 6px;
+  min-width: 44px;
+  height: 44px;
+  border-radius: var(--radius-pill);
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+  transition:
+    background-color 0.2s ease,
+    padding 0.2s ease;
+}
+.bottom-nav__item:hover {
+  background: var(--color-border);
+}
+.bottom-nav__item[aria-current='page'] {
+  padding-inline: 14px;
+  background: var(--color-nav-active);
+  color: #fff;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+/* ---------- Top bar (desktop) ---------- */
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: var(--color-surface);
+  border-bottom: 1px solid var(--color-border);
+}
+.topbar__inner {
+  display: flex;
+  align-items: center;
+  gap: var(--space-5);
+  min-height: 72px;
+}
+.topbar__nav {
+  display: flex;
+  gap: 4px;
+}
+.topbar__link {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  font-weight: 500;
+  color: var(--color-muted);
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+.topbar__link:hover {
+  background: var(--color-surface-muted);
+  color: var(--color-text);
+}
+.topbar__link[aria-current='page'] {
+  background: var(--color-nav-active);
+  color: #fff;
+  font-weight: 600;
+}
+.topbar__search {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  justify-content: center;
+}
+.topbar__search .search {
+  width: 100%;
+  max-width: 440px;
+}
+.topbar__actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-left: auto;
+}
+.topbar__avatar[aria-current='page'] {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+/* ---------- Search ---------- */
+.search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 48px;
+  padding: 0 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  color: var(--color-muted);
+  transition:
+    box-shadow 0.15s ease,
+    border-color 0.15s ease;
+}
+.search:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 3px rgba(31, 79, 255, 0.18);
+}
+.search__icon {
+  flex: none;
+}
+.search__input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  border: 0;
+  background: transparent;
+  outline: none;
+  color: var(--color-text);
+  -webkit-appearance: none;
+  appearance: none;
+}
+.search__input::placeholder {
+  color: var(--color-muted);
+}
+.search__submit {
+  display: none;
+}
+.search--compact {
+  height: 44px;
+}
+
+/* ---------- Install ---------- */
+.install-btn {
+  min-height: 40px;
+  padding: 0 18px;
+}
+.install-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px 14px;
+  align-items: center;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-sm);
+}
+.install-card__icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+.install-card__text {
+  display: grid;
+  font-size: var(--text-sm);
+  color: var(--color-muted);
+}
+.install-card__text strong {
+  color: var(--color-text);
+  font-size: var(--text-base);
+}
+.install-card__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ---------- Toast + offline banner ---------- */
+.toast {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(var(--nav-height) + 20px + env(safe-area-inset-bottom));
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 12px;
+  max-width: 440px;
+  margin-inline: auto;
+  padding: 12px 16px;
+  background: var(--color-banner);
+  color: var(--color-on-banner);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-lg);
+  font-size: var(--text-sm);
+}
+.toast span {
+  flex: 1 1 160px;
+}
+.toast button {
+  min-height: var(--touch);
+  padding: 0 14px;
+  border-radius: var(--radius-pill);
+  font-weight: 600;
+}
+.toast__action {
+  background: var(--color-primary);
+  color: #fff;
+}
+.toast__dismiss {
+  color: #d1d5db;
+}
+@media (min-width: 768px) {
+  .toast {
+    left: auto;
+    right: 24px;
+    bottom: 24px;
+    margin: 0;
+  }
+}
+
+.offline-banner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px var(--gutter);
+  background: var(--color-banner);
+  color: var(--color-on-banner);
+  font-size: var(--text-sm);
+}
+
+/* ---------- Loading skeleton ---------- */
+.skeleton {
+  border-radius: var(--radius-card);
+  background: linear-gradient(
+    90deg,
+    var(--color-border) 25%,
+    var(--color-surface-muted) 50%,
+    var(--color-border) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s linear infinite;
+}
+.skeleton--title {
+  height: 36px;
+  width: 50%;
+  border-radius: var(--radius-pill);
+}
+.skeleton--card {
+  aspect-ratio: 4 / 5;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+
+/* ---------- Report FAB (mobile, above the bottom nav) ---------- */
+.report-fab {
+  position: fixed;
+  right: 16px;
+  bottom: calc(var(--nav-height) + 24px + env(safe-area-inset-bottom));
+  z-index: 49;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: var(--radius-pill);
+  background: var(--color-primary);
+  color: #fff;
+  font-weight: 600;
+  box-shadow: var(--shadow-lg);
+}
+.report-fab .nav-badge {
+  position: static;
+}
+
+/* Six primary links no longer fit next to the search below ~1100px: tighten and drop the search
+   (Explorar has its own search field). */
+.topbar__nav {
+  min-width: 0;
+}
+@media (max-width: 1099px) {
+  .topbar__inner {
+    gap: var(--space-3);
+  }
+  .topbar__link {
+    padding: 0 10px;
+    font-size: var(--text-sm);
+  }
+  .topbar__search {
+    display: none;
+  }
+  .topbar__actions {
+    margin-left: auto;
+  }
+}
+@media (max-width: 899px) {
+  .logo__text {
+    display: none;
+  }
+}

@@ -1,0 +1,82 @@
+/* Design tokens. Mobile first; fluid scales with clamp(). */
+:root {
+  --font-sans: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+
+  /* Color */
+  --color-bg: #f4f5f7;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f3f4f6; /* circular buttons, detail tiles */
+  --color-text: #14171f;
+  --color-muted: #5f6673; /* AA on white and on --color-bg */
+  --color-border: #e5e7eb;
+  --color-primary: #1f4fff;
+  --color-primary-hover: #1a3fd1;
+  --color-on-primary: #ffffff;
+  --color-accent: #ff4d94; /* navigation + favorites */
+  --color-accent-soft: #ffe3ef;
+  --color-on-accent: #14171f;
+  --color-nav-active: #d6246f; /* white text on it: 4.8:1 */
+  --color-pin: #16a34a;
+  --color-star: #f5b301;
+  --color-badge: #e5342f;
+  --color-banner: #1c1c1e;
+  --color-on-banner: #ffffff;
+  --glass-bg: rgba(255, 255, 255, 0.72);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --color-focus: #1f4fff;
+  --color-danger: #c62828;
+  --color-success: #1b7a3d;
+
+  /* Radius */
+  --radius-card: 28px;
+  --radius-panel: 20px;
+  --radius-tile: 14px;
+  --radius-pill: 999px;
+
+  /* Shadow */
+  --shadow-sm: 0 1px 2px rgba(20, 23, 31, 0.06);
+  --shadow-md: 0 6px 20px rgba(20, 23, 31, 0.08);
+  --shadow-lg: 0 12px 36px rgba(20, 23, 31, 0.14);
+
+  /* Fluid spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: clamp(14px, 1.2vw + 10px, 20px);
+  --space-5: clamp(20px, 1.6vw + 14px, 32px);
+  --space-6: clamp(28px, 3vw + 14px, 56px);
+  --gutter: clamp(16px, 3vw, 32px);
+  --container: 1280px;
+
+  /* Fluid type */
+  --text-sm: 0.875rem;
+  --text-base: 1rem;
+  --text-lg: clamp(1.0625rem, 0.4vw + 1rem, 1.25rem);
+  --text-title: clamp(1.25rem, 1.2vw + 1rem, 1.75rem);
+  --text-section: clamp(1.75rem, 1.6vw + 1.3rem, 2rem);
+  --text-hero: clamp(2rem, 3.2vw + 1rem, 3.5rem);
+
+  --touch: 44px;
+  --nav-height: 76px;
+}
+
+:root[data-theme='dark'] {
+  --color-bg: #0f1115;
+  --color-surface: #1a1d24;
+  --color-surface-muted: #252a33;
+  --color-text: #f2f4f8;
+  --color-muted: #a3aab8;
+  --color-border: #2a2f3a;
+  --color-primary: #3f63ff;
+  --color-primary-hover: #5a7aff;
+  --color-accent-soft: #3a1b2a;
+  --color-banner: #272a33;
+  --glass-bg: rgba(26, 29, 36, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --color-focus: #8fa6ff;
+  --color-danger: #ff8a80;
+  --color-success: #5fd38a;
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 12px 36px rgba(0, 0, 0, 0.55);
+}
