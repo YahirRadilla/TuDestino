@@ -114,8 +114,8 @@ La matriz oficial vive en `CLAUDE.md` sección 20 (no se edita desde esta fase).
 | Ítem | Implementación | Prueba | Evidencia a capturar | Estado |
 |---|---|---|---|---|
 | PWA-07 Cache API | `td-tiles-v1`: `CacheFirst` + `ExpirationPlugin` (300 entradas, 7 días) + `CacheableResponsePlugin` `[0, 200]` para `tile.openstreetmap.org`; `/api/v1/map/pins` entra en la estrategia SWR existente (`td-api-v1`); `/admin/map/pins` es red directa | `swRouting.test`, Playwright (`td-tiles-v1` y `td-api-v1` sin ninguna URL `/admin/`) | DevTools > Application > Cache Storage | Hecho |
-| PWA-08 Offline parcial | Teselas ya visitadas desde caché; sin red los destinos salen del espejo IndexedDB (o de los de ejemplo) y la lista alternativa sigue funcionando; sin teselas, fondo neutro y «Sin conexión: mostrando solo los puntos guardados» | ver arriba | `F8_mapa-offline-*.png` | Hecho (los pines de reportes solo si el SWR ya los guardó) |
-| PWA-14 Geolocation | «Mi ubicación» (centra, punto propio y destinos cercanos con distancia) y mapa para elegir la ubicación del reporte y del destino | ver arriba | `F8_mapa-1280.png`, `F8_selector-ubicacion-360.png` | Hecho |
+| PWA-08 Offline parcial | Teselas ya visitadas desde caché; sin red los destinos salen del espejo IndexedDB (o de los de ejemplo) y la lista alternativa sigue funcionando; sin teselas, fondo neutro y «Sin conexión: mostrando solo los puntos guardados» | ver arriba | `F8_mapa-offline-*.png`, `PWA-08_*-offline-*.png` | Hecho (los pines de reportes solo si el SWR ya los guardó) |
+| PWA-14 Geolocation | «Mi ubicación» (centra, punto propio y destinos cercanos con distancia) y mapa para elegir la ubicación del reporte y del destino | ver arriba | `F8_mapa-1280.png`, `F8_selector-ubicacion-360.png`, `PWA-14_*.png` | Hecho |
 
 ## Avisos push y Badging API (Sprint 9 · F9)
 

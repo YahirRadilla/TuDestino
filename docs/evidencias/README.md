@@ -2,6 +2,31 @@
 
 Capturas, videos y reportes de Lighthouse que respaldan cada característica PWA.
 
+## Índice de capturas (regeneradas con el build actual)
+
+Todas se tomaron con Chrome (Playwright, canal `chrome`) sobre `npm run build && npm run preview`, la API y PostgreSQL locales y solo los datos de desarrollo. Las de móvil usan 360×780 y las de escritorio 1280×800. Las de página larga ocultan la barra inferior y el botón «Reportar» para que no floten a mitad de imagen; las de viewport sí muestran la barra fija, tal como la ve la persona. Los mapas se capturaron solo después de ver teselas de OpenStreetMap (`.leaflet-tile-loaded` > 0), pines y ninguna tesela pendiente. Las capturas `-offline` usan `context.setOffline(true)` tras una visita en línea que llena las cachés; la de «sin teselas» nunca visitó el mapa en línea (`td-tiles-v1` vacía).
+
+| Archivo | Rúbrica / requisito | Qué muestra |
+|---|---|---|
+| `UI_inicio-1280/360`, `UI_inicio-con-sesion-1280/360` | PWA-01, PWA-02 | Inicio con el logo y la navegación nueva (Explorar, Mapa, Eventos, Aprender, Perfil), sin y con sesión |
+| `UI_explorar-*`, `UI_destino-detalle-*` | RF01, RF02, HU-T05 | Catálogo y detalle de destino (Balandra) |
+| `UI_eventos-lista-*`, `UI_eventos-calendario-*` | RF04, HU-T06 | Eventos en lista y en calendario (día 12 seleccionado) |
+| `UI_educacion-*` | RF03, HU-T08 | Educación ambiental con búsqueda y filtros |
+| `UI_login-*`, `UI_perfil-*` | HU-T02, HU-T10 | Inicio de sesión y perfil (usuario de desarrollo) |
+| `PWA-06_estado-pwa-manifest-sw-cache` | PWA-05, 06, 07, 09, 10 | **Volcado generado por script** (no es DevTools) con datos reales leídos por CDP: manifest con íconos 192/512 y maskable, `getInstallabilityErrors = []`, service worker activado, Cache Storage (`workbox-precache`, `td-api-v1`, `td-tiles-v1`) e IndexedDB |
+| `PWA-08_explorar-offline-1280/360`, `PWA-08_busqueda-offline-1280`, `PWA-08_detalle-offline-1280`, `PWA-08_eventos-offline-1280`, `PWA-08_educacion-offline-1280` | PWA-08 | Modo sin conexión con el aviso y el contenido guardado (búsqueda «espiritu» sin acento incluida) |
+| `PWA-13_reporte-paso1-*`, `PWA-13_reporte-paso3-*` | RF05, RF06, HU-T09 | Formulario de reporte: tipo y descripción |
+| `PWA-13_guardado-offline-*`, `PWA-13_pendientes-en-cola-*` | PWA-13, RF23 | Reporte creado sin conexión: «Guardado en tu dispositivo» y cola «En cola» con la insignia |
+| `PWA-13_enviado-tras-reconectar-*` | PWA-13 | Tras reconectar: «Enviado», folio y código de seguimiento |
+| `PWA-13_seguimiento-1280/360`, `PWA-13_seguimiento-en-revision-1280` | RF22, HU-A04 | Seguimiento por folio + código (reporte anónimo) y su línea de tiempo tras el cambio de estado |
+| `PWA-14_reporte-ubicacion-concedida-*`, `PWA-14_reporte-ubicacion-denegada-360` | PWA-14, RF08 | Paso 2 con ubicación lista (precisión ~18 m, mapa con teselas) y con el permiso denegado |
+| `PWA-14_mapa-mi-ubicacion-1280`, `PWA-14_cerca-de-mi-1280` | PWA-14 | «Mi ubicación» en el mapa y orden «Cerca de mí» |
+| `PWA-15_compartir-destino-*`, `PWA-15_compartir-evento-*` | PWA-15, RF21 | Aviso «Enlace copiado» (fallback de Web Share; en la prueba se quitó `navigator.share` para forzarlo, la hoja nativa requiere un móvil real) |
+| `PWA-16_campana-*`, `PWA-16_bandeja-*` | PWA-16, RF22 | Campana con 1 sin leer y bandeja con «Tu reporte … cambió de estado» |
+| `PWA-16_perfil-avisos-*` | PWA-16 | Perfil con el interruptor «Recibir avisos» (apagado: no se concedió el permiso en la captura) |
+| `F7_*` | RF10–RF16, HU-A02–A08 | Panel de autoridad; ver la tabla de la sección F7 |
+| `F8_*` | HU-T13, PWA-08, PWA-14 | Mapas con teselas reales y selectores de ubicación; ver la tabla de la sección F8 |
+
 ## Convención de nombres
 
 `PWA-XX_descripcion.ext`, donde `XX` es el número de la característica (01–16).
@@ -87,7 +112,7 @@ Las comprobaciones automatizadas con Playwright (offline real con `context.setOf
 
 ## Qué capturar para el panel de autoridad (F7)
 
-Capturas ya incluidas (tomadas con Chrome sobre el build real, una API con PostgreSQL y datos de prueba que se borraron después):
+Capturas incluidas (Chrome sobre el build real, API con PostgreSQL y datos de desarrollo):
 
 | Archivo | Qué muestra |
 |---|---|
@@ -96,7 +121,9 @@ Capturas ya incluidas (tomadas con Chrome sobre el build real, una API con Postg
 | `F7_reporte-detalle-evidencia-1280.png` | Detalle: tipo, ubicación con «Abrir en mapa», reportante anónimo, evidencia cargada con sesión (HU-A03) |
 | `F7_reporte-historial-1280.png` | Historial en línea de tiempo con la nota y la autoridad tras un cambio de estado (HU-A04) |
 | `F7_eventos-moderacion-1280.png` | Cola de moderación de propuestas (aprobar / rechazar / cancelar) |
-| `F7_usuarios-1280.png` | Usuarios: alta por invitación, rol, área y desactivar con confirmación (HU-A08) |
+| `F7_usuarios-1280.png` | Usuarios de desarrollo (filtrados por `dev.tudestino.local`): alta por invitación, rol, área y desactivar (HU-A08) |
+| `F7_cambiar-estado-dialogo-1280.png` | Diálogo de cambio de estado con nota obligatoria |
+| `F7_destinos-1280.png`, `F7_educacion-admin-1280.png` | CRUD de destinos y de contenido educativo (HU-A05, HU-A07) |
 | `F7_reportes-tarjetas-360.png`, `F7_cambiar-estado-360.png` | Móvil de 360 px: menú compacto, tarjetas y diálogo de cambio de estado |
 
 Capturas manuales que faltan para el documento técnico:
@@ -110,21 +137,21 @@ Para repetir el recorrido: levanta la API (`DATABASE_URL=… PORT=3100 npm start
 
 ## Qué capturar para el mapa (F8)
 
-Capturas incluidas (Chrome sobre el build real; **las teselas se simularon con un PNG liso** porque la verificación no depende de internet, así que el fondo es un color uniforme y no el mapa de OpenStreetMap; con conexión real se ven las calles):
+Capturas incluidas (Chrome sobre el build real, **con teselas reales de OpenStreetMap** y atribución «© OpenStreetMap contributors»):
 
 | Archivo | Qué muestra |
 |---|---|
-| `F8_mapa-1280.png` | `/mapa` en escritorio: panel con capas, filtros, «Mi ubicación», leyenda y lista; mapa con pines de destino, agrupamientos y el punto del usuario (HU-T13, PWA-14) |
+| `F8_mapa-1280.png` | `/mapa` en escritorio: panel con capas, filtros, «Mi ubicación», leyenda y lista; mapa con pines de destino, y agrupamientos (HU-T13); el punto del usuario está en `PWA-14_mapa-mi-ubicacion-1280.png` |
 | `F8_mapa-360.png` | Móvil de 360 px: mapa, atribución y lista debajo |
-| `F8_mapa-offline-sin-teselas-1280.png` | Sin conexión y sin teselas guardadas: fondo neutro, «Sin conexión: mostrando solo los puntos guardados» y la lista (PWA-08) |
-| `F8_mapa-offline-con-teselas-1280.png` | Sin conexión con teselas ya visitadas servidas desde `td-tiles-v1` |
+| `F8_mapa-offline-sin-teselas-1280.png` | Sin conexión y sin teselas guardadas (cache `td-tiles-v1` vacía): fondo neutro, pines, «Sin conexión: mostrando solo los puntos guardados» y la lista (PWA-08) |
+| `F8_mapa-offline-con-teselas-1280.png` | Sin conexión con las teselas ya visitadas servidas desde `td-tiles-v1` (15 teselas y 5 pines tras recargar offline) |
 | `F8_selector-ubicacion-360.png` | Paso 2 del reporte con el mapa para ajustar el punto y los campos de coordenadas a mano |
 | `F8_admin-reporte-mini-mapa-1280.png` | Detalle de un reporte con mini-mapa en la posición exacta y el enlace externo a OpenStreetMap |
 | `F8_admin-destino-selector-1280.png` | Formulario de destino con el selector de ubicación |
+| `F8_admin-mapa-1280.png` | Mapa de reportes del personal (ubicación exacta, solo autoridad) |
 
 Capturas manuales que faltan para el documento técnico:
 
-- `F8_mapa-osm-real.png`: `/mapa` con conexión real (teselas de OpenStreetMap y atribución «© OpenStreetMap contributors»).
 - `F8_tiles-cache.png`: DevTools > Application > Cache Storage > `td-tiles-v1` (≤ 300 entradas) y `td-api-v1` con `/api/v1/map/pins` y **sin** ninguna URL `/admin/`.
 - `F8_pins-publicos-red.png`: DevTools > Network > `/api/v1/map/pins`: coordenadas redondeadas, `approximate: true`, sin folio ni descripción.
 - `F8_pins-admin-401.png`: `/api/v1/admin/map/pins` sin sesión (401) y con sesión (coordenadas exactas, `Cache-Control: private, no-store`).
