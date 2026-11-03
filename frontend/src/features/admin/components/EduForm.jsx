@@ -1,6 +1,7 @@
 import FormField from '../../auth/components/FormField.jsx';
 import { CheckboxField, SelectField, TextAreaField } from '../../../shared/components/FieldControls.jsx';
-import ImageUploadField from '../../../shared/components/ImageUploadField.jsx';
+import ImagePicker from '../../../shared/components/ImagePicker.jsx';
+import { uploadPublicImage } from '../../../api/uploads.js';
 import { useForm } from '../../../shared/hooks/useForm.js';
 import { EDU_TYPE_LABELS } from '../adminLabels.js';
 import { eduPayload, emptyEdu, validateEdu } from '../formValidation.js';
@@ -23,6 +24,9 @@ export default function EduForm({
   });
   const { field, values } = form;
   const needsUrl = values.type === 'video' || values.type === 'link';
+  const coverImages = values.cover_url
+    ? [{ id: 'edu-cover-current', url: values.cover_url }]
+    : [];
 
   return (
     <form
@@ -56,12 +60,13 @@ export default function EduForm({
         spellCheck={false}
         placeholder="https://"
       />
-      <ImageUploadField
+      <ImagePicker
         id="edu-cover"
         label="Imagen de portada (opcional)"
-        value={values.cover_url}
-        onChange={(url) => form.setValue('cover_url', url)}
-        purpose="education"
+        images={coverImages}
+        onChange={(images) => form.setValue('cover_url', images[0]?.url ?? '')}
+        max={1}
+        upload={(file) => uploadPublicImage(file, 'education')}
         error={form.errors.cover_url}
         hint="Sube una imagen JPEG, PNG o WebP de hasta 5 MB."
         previewAlt="Vista previa de la portada"

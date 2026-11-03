@@ -49,10 +49,13 @@ export function isCatalogRequest({ url, request, sameOrigin = true }) {
 
 export function isNetworkOnlyRequest({ url, request, sameOrigin = true }) {
   if (!sameOrigin || !isApiPath(url.pathname)) return false;
-  // Authenticated or mutating calls, the identity/account endpoints and every other API route
-  // that is not an explicit catalog read.
+  // Non-GET requests must bypass the worker completely. Re-issuing an intercepted
+  // multipart/form-data POST from the service worker loses its body on Safari 26.x (iOS),
+  // which made image uploads arrive as empty multipart bodies.
+  if (request.method !== 'GET') return false;
+  // Authenticated GETs, the identity/account endpoints and every other API route that is not
+  // an explicit catalog read also go straight to the network.
   return (
-    request.method !== 'GET' ||
     NETWORK_ONLY_PATH.test(url.pathname) ||
     hasAuthorization(request) ||
     !SWR_PATH.test(url.pathname)

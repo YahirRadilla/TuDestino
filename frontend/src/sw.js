@@ -89,11 +89,11 @@ registerRoute(
   }),
 );
 
-// Identity, the account, writes and everything else under /api: always the network.
+// Identity, the account and non-catalog API reads: always the network for GET. Writes are NOT
+// registered on purpose: Workbox would re-issue the request via fetch() and iOS Safari 26.x then
+// sends multipart POSTs with an empty body. Leaving them unrouted lets the browser send them.
 const networkOnly = new NetworkOnly();
-for (const method of ['GET', 'POST', 'PUT', 'PATCH', 'DELETE']) {
-  registerRoute(match(isNetworkOnlyRequest), networkOnly, method);
-}
+registerRoute(match(isNetworkOnlyRequest), networkOnly, 'GET');
 
 // If nothing could answer a page request, serve the precached offline page.
 setCatchHandler(async ({ request }) => {

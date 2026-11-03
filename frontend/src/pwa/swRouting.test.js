@@ -57,19 +57,26 @@ describe('isCatalogRequest (stale-while-revalidate)', () => {
 
 describe('isNetworkOnlyRequest', () => {
   it.each([
-    ['/api/v1/auth/login', 'POST'],
-    ['/api/v1/auth/refresh', 'POST'],
     ['/api/v1/me', 'GET'],
     ['/api/v1/me/favorites', 'GET'],
-    ['/api/v1/me/favorites/balandra', 'PUT'],
-    ['/api/v1/destinations/balandra/reviews/me', 'PUT'],
     ['/api/v1/destinations/balandra/reviews', 'GET'],
-    ['/api/v1/reports', 'POST'],
-    ['/api/v1/reports/track', 'POST'],
     ['/api/v1/report-types', 'GET'],
-    [`/api/v1/events/${EVENT_ID}/attendance`, 'DELETE'],
   ])('%s %s goes straight to the network', (path, method) => {
     expect(isNetworkOnlyRequest(req(path, { method }))).toBe(true);
+  });
+
+  // Re-issuing a POST from the worker drops its multipart body on iOS Safari 26.x (image uploads).
+  it.each([
+    ['/api/v1/uploads/images', 'POST'],
+    ['/api/v1/auth/login', 'POST'],
+    ['/api/v1/auth/refresh', 'POST'],
+    ['/api/v1/me/favorites/balandra', 'PUT'],
+    ['/api/v1/destinations/balandra/reviews/me', 'PUT'],
+    ['/api/v1/reports', 'POST'],
+    ['/api/v1/reports/track', 'POST'],
+    [`/api/v1/events/${EVENT_ID}/attendance`, 'DELETE'],
+  ])('%s %s is not intercepted by the service worker', (path, method) => {
+    expect(isNetworkOnlyRequest(req(path, { method }))).toBe(false);
   });
 
   it('sends authenticated reads of catalog paths to the network too', () => {

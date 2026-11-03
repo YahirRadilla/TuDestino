@@ -1,6 +1,11 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
-import { useInstallPrompt, INSTALL_DISMISSED_KEY } from './useInstallPrompt.js';
+import {
+  INSTALL_DISMISSED_KEY,
+  isIosDevice,
+  isStandaloneApp,
+  useInstallPrompt,
+} from './useInstallPrompt.js';
 
 function fireBeforeInstallPrompt(outcome = 'accepted') {
   const event = new Event('beforeinstallprompt', { cancelable: true });
@@ -57,5 +62,13 @@ describe('useInstallPrompt', () => {
     });
     expect(result.current.isInstalled).toBe(true);
     expect(result.current.canInstall).toBe(false);
+  });
+
+  it('detects iPhone, iPad and already installed web apps', () => {
+    expect(isIosDevice({ userAgent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0)' })).toBe(true);
+    expect(isIosDevice({ userAgent: 'Mozilla/5.0 (Macintosh)', platform: 'MacIntel', maxTouchPoints: 5 })).toBe(true);
+    expect(isIosDevice({ userAgent: 'Mozilla/5.0 (Windows NT 10.0)', platform: 'Win32' })).toBe(false);
+    expect(isStandaloneApp({ matchMedia: () => ({ matches: true }) })).toBe(true);
+    expect(isStandaloneApp({ matchMedia: () => ({ matches: false }), navigator: {} })).toBe(false);
   });
 });

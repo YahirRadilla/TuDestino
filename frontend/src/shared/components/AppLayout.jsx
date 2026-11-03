@@ -7,6 +7,7 @@ import UpdateToast from './UpdateToast.jsx';
 import { useIsDesktop } from '../hooks/useMediaQuery.js';
 import FavoritesSync from '../../features/destinations/favorites/FavoritesSync.jsx';
 import OutboxSync from '../../features/reports/OutboxSync.jsx';
+import ProposalOutboxSync from '../../features/events/ProposalOutboxSync.jsx';
 import NotificationsProvider from '../../features/notifications/NotificationsProvider.jsx';
 
 function Loading() {
@@ -45,6 +46,7 @@ export default function AppLayout() {
         <UpdateToast />
         <FavoritesSync />
         <OutboxSync />
+        <ProposalOutboxSync />
       </div>
     </NotificationsProvider>
   );

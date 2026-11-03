@@ -53,7 +53,11 @@ export function destinationToForm(destination) {
     care_tips: (destination.care_tips ?? []).join('\n'),
     is_protected_area: destination.is_protected_area,
     status: destination.status,
-    images: destination.images.map((image) => ({ url: image.url, alt_text: image.alt_text ?? '' })),
+    images: destination.images.map((image) => ({
+      id: image.id ?? image.url,
+      url: image.url,
+      alt_text: image.alt_text ?? '',
+    })),
   };
 }
 

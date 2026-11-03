@@ -6,10 +6,11 @@ import { clearDraft, readDraft, writeDraft } from '../reportDraft.js';
 import { fetchReportTypes } from '../reportsApi.js';
 import { REPORT_TYPES, withTypeMeta } from '../reportTypes.js';
 import { parseLat, parseLng, validateStep } from '../reportValidation.js';
+import { MAX_PHOTOS } from '../imagePrep.js';
+import ImagePicker from '../../../shared/components/ImagePicker.jsx';
 import { submitReport } from '../submitReport.js';
 import DetailsStep from './DetailsStep.jsx';
 import LocationStep from './LocationStep.jsx';
-import PhotoPicker from './PhotoPicker.jsx';
 import TypeStep from './TypeStep.jsx';
 
 const LAST_STEP = 3;
@@ -57,15 +58,6 @@ export default function ReportForm({ onDone }) {
 
   const anonymous = draft.anonymous ?? !isAuthenticated;
   const { step } = draft;
-
-  const addPhotos = useCallback((added) => setPhotos((current) => [...current, ...added]), []);
-  const removePhoto = useCallback((id) => {
-    setPhotos((current) => {
-      const target = current.find((photo) => photo.id === id);
-      if (target) URL.revokeObjectURL(target.url);
-      return current.filter((photo) => photo.id !== id);
-    });
-  }, []);
 
   const next = () => {
     const found = validateStep(step, draft);
@@ -129,7 +121,19 @@ export default function ReportForm({ onDone }) {
       )}
       {step === 2 && (
         <div className="report-step">
-          <PhotoPicker photos={photos} onAdd={addPhotos} onRemove={removePhoto} />
+          <ImagePicker
+            id="report-photos"
+            label={
+              <>
+                Fotos <span className="muted">(opcional, hasta {MAX_PHOTOS})</span>
+              </>
+            }
+            hint="Las fotos se reducen en tu teléfono y se les quitan los datos ocultos (como la ubicación de la cámara)."
+            images={photos}
+            onChange={setPhotos}
+            max={MAX_PHOTOS}
+            previewAlt={(index) => `Foto ${index + 1} del reporte`}
+          />
           <LocationStep values={draft} errors={errors} onChange={patch} />
         </div>
       )}

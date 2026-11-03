@@ -220,6 +220,12 @@
   gap: 8px;
   flex-wrap: wrap;
 }
+.install-guide {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 1.25rem;
+}
 
 /* ---------- Toast + offline banner ---------- */
 .toast {

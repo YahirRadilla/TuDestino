@@ -30,15 +30,17 @@ export default function ImageUploadField({
   const describedBy = [hint && hintId, shownError && errorId].filter(Boolean).join(' ') || undefined;
 
   const pick = async (event) => {
-    const file = event.target.files?.[0];
-    event.target.value = '';
+    const input = event.target;
+    const file = input.files?.[0];
     if (!file) return;
     setProblem('');
     if (!ACCEPTED_TYPES.includes(file.type)) {
+      input.value = '';
       setProblem('Usa una imagen JPEG, PNG o WebP.');
       return;
     }
     if (file.size > MAX_BYTES) {
+      input.value = '';
       setProblem('La imagen puede pesar hasta 5 MB.');
       return;
     }
@@ -52,6 +54,9 @@ export default function ImageUploadField({
           : 'No se pudo subir la imagen. Inténtalo de nuevo.',
       );
     } finally {
+      // Clear only after the upload: iOS Safari can lose the selected file if the input is
+      // reset while the request is still being built.
+      input.value = '';
       setBusy(false);
     }
   };

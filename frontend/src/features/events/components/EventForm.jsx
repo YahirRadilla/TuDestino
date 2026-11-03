@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import FormField from '../../auth/components/FormField.jsx';
 import { TextAreaField } from '../../../shared/components/FieldControls.jsx';
-import ImageUploadField from '../../../shared/components/ImageUploadField.jsx';
+import ImagePicker from '../../../shared/components/ImagePicker.jsx';
+import { uploadPublicImage } from '../../../api/uploads.js';
 import LocationPicker from '../../map/components/LocationPicker.jsx';
 import { useForm } from '../../../shared/hooks/useForm.js';
 import { emptyEventForm, eventPayload, validateEventForm } from '../eventForm.js';
@@ -16,16 +18,41 @@ export default function EventForm({
   busyLabel = 'Guardando…',
   idPrefix = 'event',
   showMap = false,
+  // The proposal form keeps the picked file in memory so it can be queued offline; staff forms
+  // upload it immediately and store the returned URL.
+  deferImage = false,
   onSubmit,
   onCancel,
 }) {
+  const [deferredImages, setDeferredImages] = useState(() =>
+    deferImage && initialValues.image_url
+      ? [{ id: `${idPrefix}-image-current`, url: initialValues.image_url }]
+      : [],
+  );
   const form = useForm({
     initialValues,
     idPrefix,
     validate: (values) => validateEventForm(values, { isNew }),
-    onSubmit: (values) => onSubmit(eventPayload(values)),
+    onSubmit: (values) =>
+      onSubmit(eventPayload(values), {
+        imageFile: deferImage ? (deferredImages[0]?.file ?? null) : null,
+      }),
   });
   const { field, values } = form;
+  const imageImages = deferImage
+    ? deferredImages
+    : values.image_url
+      ? [{ id: `${idPrefix}-image-current`, url: values.image_url }]
+      : [];
+
+  const changeImage = (images) => {
+    if (deferImage) {
+      setDeferredImages(images);
+      form.setValue('image_url', images[0]?.file ? '' : (images[0]?.url ?? ''));
+      return;
+    }
+    form.setValue('image_url', images[0]?.url ?? '');
+  };
 
   return (
     <form
@@ -78,12 +105,13 @@ export default function EventForm({
           placeholder="-110.3128"
         />
       </div>
-      <ImageUploadField
+      <ImagePicker
         id={`${idPrefix}-image`}
         label="Imagen (opcional)"
-        value={values.image_url}
-        onChange={(url) => form.setValue('image_url', url)}
-        purpose="event"
+        images={imageImages}
+        onChange={changeImage}
+        max={1}
+        upload={deferImage ? undefined : (file) => uploadPublicImage(file, 'event')}
         error={form.errors.image_url}
         hint="Sube una imagen JPEG, PNG o WebP de hasta 5 MB."
         previewAlt="Vista previa de la imagen del evento"

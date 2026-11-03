@@ -1,4 +1,7 @@
-import { ApiError, apiFetch } from '../../api/client.js';
+import { apiFetch } from '../../api/client.js';
+import { classifyError } from '../../api/classifyError.js';
+
+export { classifyError };
 
 // Sending a queued report. Shared by the page and the service worker (src/sw.js), so this module
 // must stay free of React and of the DOM.
@@ -31,22 +34,6 @@ export function buildReportFormData(entry, now = Date.now()) {
     form.append('photos', blob, photo.name || `foto-${index + 1}.jpg`);
   });
   return form;
-}
-
-const RETRYABLE_STATUS = (status) => status === 408 || status === 409 || status === 429 || status >= 500;
-
-/**
- * 'sent'   -> delivered (a 200 replay of an earlier delivery counts as delivered).
- * 'retry'  -> transient: no network, timeout, 5xx, 429, 408 or a 409 race. Keep it queued.
- * 'failed' -> the server refused this report (validation, size, type): retrying cannot help.
- */
-export function classifyError(error) {
-  if (!(error instanceof ApiError)) return { outcome: 'retry', reason: 'Error inesperado.', kind: 'unknown' };
-  if (error.kind !== 'http') return { outcome: 'retry', reason: error.message, kind: error.kind };
-  if (RETRYABLE_STATUS(error.status)) {
-    return { outcome: 'retry', reason: error.message, kind: 'http' };
-  }
-  return { outcome: 'failed', reason: error.message, code: error.code };
 }
 
 export function toReceipt(response, now = Date.now()) {

@@ -1,8 +1,8 @@
 import FormField from '../../auth/components/FormField.jsx';
 import { CheckboxField, SelectField, TextAreaField } from '../../../shared/components/FieldControls.jsx';
-import ImageUploadField from '../../../shared/components/ImageUploadField.jsx';
+import ImagePicker from '../../../shared/components/ImagePicker.jsx';
+import { uploadPublicImage } from '../../../api/uploads.js';
 import LocationPicker from '../../map/components/LocationPicker.jsx';
-import Icon from '../../../shared/components/Icon.jsx';
 import { useForm } from '../../../shared/hooks/useForm.js';
 import { DESTINATION_STATUS_LABELS } from '../adminLabels.js';
 import { destinationPayload, emptyDestination, MAX_IMAGES, validateDestination } from '../formValidation.js';
@@ -98,59 +98,26 @@ export default function DestinationForm({
       />
       <CheckboxField {...form.check('is_protected_area')} label="Es un Área Natural Protegida" />
 
-      <fieldset
-        className="field-group"
-        aria-describedby={form.errors.images ? 'dest-images-error' : undefined}
-      >
-        <legend className="field__label">
-          Imágenes ({values.images.length}/{MAX_IMAGES})
-        </legend>
-        {values.images.map((image, index) => (
-          <div key={index} className="image-row">
-            <ImageUploadField
-              id={`dest-image-${index}`}
-              label={`Imagen ${index + 1}`}
-              value={image.url}
-              onChange={(url) => setImage(index, { url })}
-              purpose="destination"
-              hint="Sube una imagen JPEG, PNG o WebP de hasta 5 MB."
-              previewAlt={`Vista previa de la imagen ${index + 1}`}
-            />
-            <FormField
-              id={`dest-image-alt-${index}`}
-              label={`Texto alternativo ${index + 1}`}
-              value={image.alt_text}
-              onChange={(event) => setImage(index, { alt_text: event.target.value })}
-            />
-            <button
-              type="button"
-              className="btn btn--ghost"
-              onClick={() =>
-                form.setValue(
-                  'images',
-                  values.images.filter((_, i) => i !== index),
-                )
-              }
-            >
-              Quitar imagen {index + 1}
-            </button>
-          </div>
-        ))}
-        {form.errors.images && (
-          <p id="dest-images-error" className="field__error">
-            {form.errors.images}
-          </p>
-        )}
-        <button
-          type="button"
-          className="btn btn--ghost"
-          disabled={values.images.length >= MAX_IMAGES}
-          onClick={() => form.setValue('images', [...values.images, { url: '', alt_text: '' }])}
-        >
-          <Icon name="plus" size={18} />
-          Agregar imagen
-        </button>
-      </fieldset>
+      <ImagePicker
+        id="dest-images"
+        label={`Imágenes (${values.images.length}/${MAX_IMAGES})`}
+        images={values.images}
+        onChange={(images) => form.setValue('images', images)}
+        max={MAX_IMAGES}
+        upload={(file) => uploadPublicImage(file, 'destination')}
+        error={form.errors.images}
+        hint={`Puedes subir hasta ${MAX_IMAGES} imágenes JPEG, PNG o WebP de hasta 5 MB.`}
+        previewAlt={(index) => `Vista previa de la imagen ${index + 1}`}
+      />
+      {values.images.map((image, index) => (
+        <FormField
+          key={image.id ?? image.url}
+          id={`dest-image-alt-${index}`}
+          label={`Texto alternativo ${index + 1} (opcional)`}
+          value={image.alt_text ?? ''}
+          onChange={(event) => setImage(index, { alt_text: event.target.value })}
+        />
+      ))}
 
       {form.formError && (
         <p role="alert" className="form-alert">

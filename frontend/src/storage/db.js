@@ -1,15 +1,17 @@
 import { openDB } from 'idb';
 
-// IndexedDB (PWA-05): content mirrors for offline use, favorites and the report outbox.
+// IndexedDB (PWA-05): content mirrors for offline use, favorites, the report outbox and the
+// event-proposal outbox.
 export const DB_NAME = 'tudestino';
-export const DB_VERSION = 1;
+export const DB_VERSION = 2;
 
 export const STORES = Object.freeze({
   destinations: 'destinations', // key: slug     -> { key, data (raw API item) }
   events: 'events', //             key: id       -> { key, data (raw API item) }
   edu: 'edu', //                   key: slug     -> { key, data (raw API item) }
   favorites: 'favorites', //       key: slug     -> { slug, addedAt }
-  outbox: 'outbox', //             key: id (autoIncrement). Created now; filled by the report queue (F5).
+  outbox: 'outbox', //             key: id (autoIncrement), used by the report queue (F5).
+  proposals: 'proposals', //       key: id (autoIncrement), offline event proposals (RF20).
   meta: 'meta', //                 key: key      -> { key, value } (last sync times, schema notes)
 });
 
@@ -24,6 +26,10 @@ export const MIGRATIONS = [
     const outbox = db.createObjectStore(STORES.outbox, { keyPath: 'id', autoIncrement: true });
     outbox.createIndex('createdAt', 'createdAt');
     db.createObjectStore(STORES.meta, { keyPath: 'key' });
+  },
+  function v2(db) {
+    const proposals = db.createObjectStore(STORES.proposals, { keyPath: 'id', autoIncrement: true });
+    proposals.createIndex('createdAt', 'createdAt');
   },
 ];
 
