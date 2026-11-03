@@ -39,14 +39,17 @@ export function validatePasswordConfirmation(password, confirmation) {
 }
 
 // Optional field: empty means "no avatar".
+const LOCAL_UPLOAD_PATH = /^\/api\/v1\/uploads\/public\/[\w./-]+$/;
+
 export function validateAvatarUrl(value) {
   const url = value.trim();
   if (!url) return '';
   if (url.length > 500) return 'La dirección es demasiado larga.';
+  if (LOCAL_UPLOAD_PATH.test(url)) return '';
   try {
-    return new URL(url).protocol === 'https:' ? '' : 'Usa una dirección que empiece con https://';
+    return new URL(url).protocol === 'https:' ? '' : 'Sube una imagen o usa una URL https.';
   } catch {
-    return 'Ingresa una dirección válida que empiece con https://';
+    return 'Sube una imagen o usa una URL https válida.';
   }
 }
 

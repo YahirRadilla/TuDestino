@@ -9,9 +9,12 @@ export const MAX_CARE_TIPS = 10;
 const SLUG = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const LOCAL_UPLOAD_PATH = /^\/api\/v1\/uploads\/public\/[\w./-]+$/;
+
 export const isHttps = (value) => URL.canParse(value) && new URL(value).protocol === 'https:';
-// Same rule as the API: an https URL or a bundled /img/ asset.
-export const isImageUrl = (value) => /^\/img\/[\w./-]+$/.test(value) || isHttps(value);
+// Same rule as the API: an https URL, a bundled /img/ asset or an image uploaded through the API.
+export const isImageUrl = (value) =>
+  /^\/img\/[\w./-]+$/.test(value) || LOCAL_UPLOAD_PATH.test(value) || isHttps(value);
 
 const lengthBetween = (value, min, max) => {
   const length = String(value ?? '').trim().length;
@@ -80,7 +83,7 @@ export function validateDestination(values) {
   const badImage = values.images.findIndex((image) => !isImageUrl(image.url.trim()));
   if (values.images.length > MAX_IMAGES) errors.images = `Máximo ${MAX_IMAGES} imágenes.`;
   else if (badImage !== -1) {
-    errors.images = `La imagen ${badImage + 1} necesita una URL https o una ruta /img/…`;
+    errors.images = `La imagen ${badImage + 1} necesita una imagen subida, una URL https o una ruta /img/…`;
   }
   return errors;
 }
@@ -146,7 +149,7 @@ export function validateEdu(values) {
     errors.media_url = 'Debe ser una URL que empiece con https://';
   }
   const cover = values.cover_url.trim();
-  if (cover && !isImageUrl(cover)) errors.cover_url = 'Usa una URL https o una ruta /img/…';
+  if (cover && !isImageUrl(cover)) errors.cover_url = 'Sube una imagen o usa una URL https.';
   if (values.body.trim().length > 20000) errors.body = 'Máximo 20 000 caracteres.';
   return errors;
 }

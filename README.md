@@ -21,7 +21,7 @@ La fuente única de verdad del proyecto es [`CLAUDE.md`](CLAUDE.md).
 | Build del frontend | `cd frontend && npm run build && npm run preview` |
 | Regenerar íconos e ilustraciones | `cd frontend && npm run assets` |
 
-Define las variables en un `.env` local antes de levantar con Docker (no hay `.env.example` versionado; las de reportes de F5 y push de F9 se documentan en sus secciones). Para ver los cambios del código en tiempo real usa `docker compose watch`: sincroniza `backend/` y `frontend/` con los contenedores y reconstruye la imagen si cambian las dependencias. El servicio web define `CHOKIDAR_USEPOLLING=true` para que Vite detecte los cambios también en Docker Desktop sobre Windows. El service worker solo se registra en el build de producción (`npm run build && npm run preview`).
+Define las variables en un `.env` local en la raíz del repositorio antes de levantar con Docker (no hay `.env.example` versionado; las de reportes de F5, Cloudinary y push de F9 se documentan en sus secciones). Ese archivo está ignorado por git y `compose.yaml` lo usa para inyectar las variables en el contenedor de la API. Para ver los cambios del código en tiempo real usa `docker compose watch`: sincroniza `backend/` y `frontend/` con los contenedores y reconstruye la imagen si cambian las dependencias. El servicio web define `CHOKIDAR_USEPOLLING=true` para que Vite detecte los cambios también en Docker Desktop sobre Windows. El service worker solo se registra en el build de producción (`npm run build && npm run preview`).
 
 ## Revisión final de interfaz y datos (2026-11-02)
 
@@ -36,6 +36,16 @@ Estos ajustes se aplicaron después de las capturas de `docs/evidencias`; hay qu
 - **Reportes.** Se agregó «Otro» (`otro`, no sensible) a los tipos del frontend, del respaldo local y del seed.
 - **Eventos y botones.** «Proponer un evento» incluye un selector de mapa: al tocar o mover el pin se llenan latitud y longitud (también se pueden escribir). «Proponer un evento» y «Cerrar sesión» usan `btn--surface` (fondo blanco, borde y sombra) para que se lean como botones.
 - **Docker.** `docker compose watch` sincroniza `backend/` y `frontend/`, y reconstruye la imagen si cambian `package.json`/`package-lock.json`. `CHOKIDAR_USEPOLLING=true` y `server.watch.usePolling` hacen que Vite detecte cambios en Docker Desktop sobre Windows.
+
+## Subida de imágenes (2026-11-03)
+
+Ya no se pide pegar una URL de imagen en los formularios: se elige un archivo, se sube al instante y el formulario guarda la URL devuelta.
+
+- **Dónde se configuran las credenciales.** En el `.env` de la raíz (ignorado por git) con `STORAGE_DRIVER=cloudinary`, `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY` y `CLOUDINARY_API_SECRET`. `compose.yaml` las pasa a la API. Nunca se commitea el secreto; en otros entornos se definen como variables del proveedor.
+- **Qué se puede subir.** Foto de perfil, imágenes de destinos, imagen de eventos/propuestas y portada de contenido educativo. Solo JPEG, PNG o WebP de hasta 5 MB; el backend comprueba los magic bytes, elimina metadatos y re-codifica a WebP.
+- **Permisos.** `POST /api/v1/uploads/images?purpose=avatar|event` requiere sesión; `destination` y `education` requieren `authority` o `admin`.
+- **Público vs. privado.** Estas imágenes se guardan como recursos públicos de Cloudinary (o bajo `/api/v1/uploads/public/…` con el driver local). Las evidencias de reportes siguen siendo privadas: Cloudinary `authenticated` y lectura solo por la ruta autenticada del panel.
+- **Componente compartido.** `frontend/src/shared/components/ImageUploadField.jsx` muestra vista previa, estado «Subiendo…», error y opción de quitar; `frontend/src/api/uploads.js` envía el `FormData`.
 
 ## Base de datos, migraciones y seeds (Sprint 2)
 
@@ -154,17 +164,20 @@ Endpoints nuevos (bajo `/api/v1`; todos públicos, un visitante puede reportar y
 | `POST /reports` | `multipart/form-data`: `type`, `description` (10–2000), `lat`, `lng`, `accuracy_m`?, `destination_slug`?, `occurred_at`? (no futuro), `anonymous` (por defecto `true`), `client_uuid` (obligatorio) y hasta 4 archivos `photos`. `201` con `folio` y `tracking_code` (una sola vez); `200` con `replayed: true` y `tracking_code: null` si el `client_uuid` ya existe |
 | `POST /reports/track` | JSON `{ folio, code }`. Devuelve estado e historial (`from_status`, `to_status`, `note`, `created_at`), sin autor ni evidencias. `404 REPORT_NOT_FOUND` idéntico para folio inexistente y código erróneo |
 
-Variables nuevas del backend (validadas con zod; ver `backend/src/config/env.js`). No hay `.env.example` versionado: las variables se documentan aquí.
+Variables nuevas del backend (validadas con zod; ver `backend/src/config/env.js`). No hay `.env.example` versionado: las variables se documentan aquí. En Docker Compose se leen del `.env` de la raíz (ignorado por git); el contenedor las recibe mediante `compose.yaml`.
 
 | Variable | Por defecto | Notas |
 |---|---|---|
-| `STORAGE_DRIVER` | `local` (`cloudinary` en producción) | Dónde se guardan las evidencias: `local` o `cloudinary` |
-| `CLOUDINARY_URL` | sin definir | `cloudinary://<api_key>:<api_secret>@<cloud_name>`. Obligatoria con `STORAGE_DRIVER=cloudinary` (y por tanto en producción). Las fotos se suben como recursos `authenticated` (no accesibles sin URL firmada) |
-| `UPLOADS_DIR` | `backend/uploads` | Carpeta del driver `local`. Está en `.gitignore` y fuera de cualquier ruta pública |
+| `STORAGE_DRIVER` | `local` (`cloudinary` en producción) | Dónde se guardan las evidencias y las imágenes públicas: `local` o `cloudinary` |
+| `CLOUDINARY_URL` | sin definir | Alternativa compacta: `cloudinary://<api_key>:<api_secret>@<cloud_name>` |
+| `CLOUDINARY_CLOUD_NAME` / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` | sin definir | Variables separadas de Cloudinary; van juntas. El backend construye `CLOUDINARY_URL` si no se define |
+| `UPLOADS_DIR` | `backend/uploads` | Carpeta del driver `local`. Está en `.gitignore`. Las imágenes públicas locales se sirven por `/api/v1/uploads/public/…`; las evidencias de reportes nunca tienen ruta pública |
 | `REPORT_RATE_LIMIT_MAX` / `REPORT_RATE_LIMIT_WINDOW_MINUTES` | `10` / `60` | Límite de `POST /reports` por cliente |
 | `TRACK_RATE_LIMIT_MAX` / `TRACK_RATE_LIMIT_WINDOW_MINUTES` | `10` / `15` | Límite estricto de `POST /reports/track` por cliente |
 
-Límites de subida: 4 fotos por reporte, 5 MB cada una (`413 PAYLOAD_TOO_LARGE`), solo JPEG/PNG/WebP comprobados por sus primeros bytes (`415 UNSUPPORTED_MEDIA_TYPE`), cuerpo total ≤ ~20,25 MB (se rechaza por `Content-Length` antes de leerlo), campos de texto ≤ 16 KB. Errores de validación: `400 VALIDATION_ERROR`; rate limit: `429 RATE_LIMITED`.
+Con `STORAGE_DRIVER=cloudinary` las evidencias de reportes se suben como recursos `authenticated` (solo accesibles con URL firmada) y las fotos de perfil, destinos, eventos y portadas educativas como recursos públicos normales. El endpoint autenticado `POST /api/v1/uploads/images?purpose=avatar|event|destination|education` recibe el campo multipart `image`; `destination` y `education` exigen rol `authority` o `admin`.
+
+Límites de subida: 4 fotos por reporte, 5 MB cada una (`413 PAYLOAD_TOO_LARGE`), solo JPEG/PNG/WebP comprobados por sus primeros bytes (`415 UNSUPPORTED_MEDIA_TYPE`), cuerpo total ≤ ~20,25 MB (se rechaza por `Content-Length` antes de leerlo), campos de texto ≤ 16 KB. La subida de imágenes públicas acepta una imagen de hasta 5 MB y el backend la re-codifica a WebP sin EXIF antes de guardarla. Errores de validación: `400 VALIDATION_ERROR`; rate limit: `429 RATE_LIMITED`.
 
 Cómo probarlo a mano:
 
@@ -205,12 +218,12 @@ Endpoints (todos bajo `/api/v1`, `Cache-Control: private, no-store`, límite de 
 | `GET /admin/reports/:id` | authority, admin | Datos, tipo, ubicación, evidencias (solo id, MIME y `download_path`), historial con autor y `allowed_transitions`. `reporter` solo existe si el reporte **no** fue anónimo; si lo fue, `reporter: null` y nunca se devuelve `reporter_id` |
 | `GET /admin/reports/:id/evidences/:evidenceId` | authority, admin | Imagen en flujo desde el almacenamiento (`Cache-Control: private, no-store`, `nosniff`). Con Cloudinary se firma una URL de 60 s y la API la descarga y la reenvía (el navegador nunca la ve) |
 | `PATCH /admin/reports/:id/status` | authority, admin | `{ status, note }` (nota 3–1000, obligatoria). `pending → in_review \| dismissed`; `in_review → resolved \| dismissed \| pending`; `resolved`/`dismissed` son terminales salvo que un **admin** los reabra a `in_review`; el resto responde `409 INVALID_TRANSITION`. UPDATE + INSERT en el historial en una transacción con `SELECT … FOR UPDATE` |
-| `GET`/`POST /admin/destinations`, `GET`/`PATCH`/`DELETE /admin/destinations/:id` | authority, admin | Incluye borradores. `slug` generado (`playa-x`, `playa-x-2`…) o explícito (`409 SLUG_TAKEN`); `lat`/`lng` ⇒ `geography`; `images: [{ url, alt_text }]` (https o `/img/…`; al editar reemplazan a las anteriores). `DELETE` es lógico (`deleted_at`) |
+| `GET`/`POST /admin/destinations`, `GET`/`PATCH`/`DELETE /admin/destinations/:id` | authority, admin | Incluye borradores. `slug` generado (`playa-x`, `playa-x-2`…) o explícito (`409 SLUG_TAKEN`); `lat`/`lng` ⇒ `geography`; `images: [{ url, alt_text }]` (imagen subida, https o `/img/…`; al editar reemplazan a las anteriores). `DELETE` es lógico (`deleted_at`) |
 | `GET`/`POST /admin/events`, `GET`/`PATCH`/`DELETE /admin/events/:id` | authority, admin | `POST` crea ya `published`; no acepta fechas pasadas ni `ends_at < starts_at`. `DELETE` es lógico |
 | `PATCH /admin/events/:id/moderation` | authority, admin | `{ action: approve \| reject \| cancel, reason? }`. `approve`/`reject` solo desde `pending`; `reject` exige motivo; `cancel` desde `pending` o `published`; si no, `409` |
 | `POST /events` | cualquier sesión | Propone un evento (mismo validador): queda `pending` con `organizer_id` = quien lo propone. 10 por hora |
 | `GET /me/events/proposed` | cualquier sesión | Mis propuestas con estado, `moderation_note` (motivo del rechazo o cancelación) |
-| `GET`/`POST /admin/edu-contents`, `GET`/`PATCH`/`DELETE /admin/edu-contents/:id` | authority, admin | `slug` único, `type` article/video/link (video y enlace exigen `media_url` https), `is_published` (`published_at` se fija la primera vez), borrado lógico |
+| `GET`/`POST /admin/edu-contents`, `GET`/`PATCH`/`DELETE /admin/edu-contents/:id` | authority, admin | `slug` único, `type` article/video/link (video y enlace exigen `media_url` https), `cover_url` opcional con imagen subida, `is_published` (`published_at` se fija la primera vez), borrado lógico |
 | `GET /admin/users`, `POST /admin/users`, `PATCH /admin/users/:id`, `POST /admin/users/:id/invitation`, `GET /admin/areas` | **solo admin** | Lista paginada (`role`, `status`, `q`). Alta de `authority`/`admin`; `PATCH` cambia rol, área, nombre y `is_active` |
 
 ### Decisiones de diseño (Sprint 7)
@@ -224,7 +237,7 @@ Endpoints (todos bajo `/api/v1`, `Cache-Control: private, no-store`, límite de 
 - **Historial y reportes de solo lectura.** No existe ninguna ruta que modifique el contenido de un reporte (`PUT`/`PATCH`/`DELETE /admin/reports/:id` responden 404) y el trigger sigue rechazando `UPDATE`/`DELETE` del historial. Limpiar reportes de prueba exige desactivar un instante el trigger en una transacción (como hacen las pruebas de integración); nunca en producción.
 - **Auditoría.** `admin.<recurso>.<acción>` (nivel `info`, pino) con `actorId`, `actorRole` e identificadores/enums/booleanos; descarta cualquier texto libre, así que las notas, descripciones y correos nunca llegan al log. Hay una prueba que lo comprueba.
 - **Sin caché ni sin conexión.** Todo `/admin` es de red directa: el service worker no lo cachea (lleva credenciales) y la interfaz muestra «Sin conexión» en lugar de datos viejos; lo único que se guarda en la sesión del navegador son filtros en la URL.
-- **Pendiente / límites.** Destinos e imágenes se dan por URL (la subida de archivos llega en otra fase); el mapa se documenta en la sección siguiente; los avisos al proponente y al denunciante llegan en F9 (push).
+- **Imágenes y límites.** Destinos, eventos, perfil y educación suben archivos con `POST /uploads/images`; el mapa se documenta en la sección siguiente y los avisos al proponente y al denunciante llegan en F9 (push).
 
 ## Mapa (Sprint 8 · F8)
 

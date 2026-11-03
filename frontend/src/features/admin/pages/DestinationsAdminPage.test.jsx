@@ -61,6 +61,7 @@ describe('destinations admin', () => {
     const openForm = async () => {
       const view = open({
         'POST /admin/destinations': () => json({ data: destinationItem({ id: 'd-3' }) }, 201),
+        'POST /uploads/images': { data: { url: 'https://res.cloudinary.com/demo/nueva.webp' } },
       });
       await screen.findByRole('table');
       await waitFor(() => expect(screen.getByRole('button', { name: /Nuevo destino/ })).toBeEnabled());
@@ -88,13 +89,19 @@ describe('destinations admin', () => {
       await userEvent.type(within(dialog).getByLabelText('Longitud'), '-110.3128');
       await userEvent.type(within(dialog).getByLabelText(/Consejos de cuidado/), 'Lleva tu basura');
       await userEvent.click(within(dialog).getByRole('button', { name: 'Agregar imagen' }));
-      await userEvent.type(within(dialog).getByLabelText('URL de la imagen 1'), '/img/nueva.svg');
+      await userEvent.upload(
+        within(dialog).getByLabelText('Imagen 1'),
+        new File(['foto'], 'nueva.png', { type: 'image/png' }),
+      );
+      expect(
+        await within(dialog).findByRole('img', { name: 'Vista previa de la imagen 1' }),
+      ).toBeInTheDocument();
       await userEvent.click(within(dialog).getByRole('checkbox', { name: /Área Natural Protegida/ }));
       await userEvent.click(within(dialog).getByRole('button', { name: 'Crear destino' }));
 
       await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
       expect(await screen.findByText('Destino creado.')).toBeInTheDocument();
-      expect(sent(calls, 'POST')[0].body).toMatchObject({
+      expect(sent(calls, 'POST').find((call) => call.path === '/admin/destinations').body).toMatchObject({
         name: 'Playa Nueva',
         category: 'playa',
         lat: 24.1426,
@@ -102,7 +109,7 @@ describe('destinations admin', () => {
         status: 'draft',
         is_protected_area: true,
         care_tips: ['Lleva tu basura'],
-        images: [{ url: '/img/nueva.svg', alt_text: null }],
+        images: [{ url: 'https://res.cloudinary.com/demo/nueva.webp', alt_text: null }],
       });
       expect(
         calls.filter((c) => c.path === '/admin/destinations' && c.method === 'GET').length,

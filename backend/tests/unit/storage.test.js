@@ -25,6 +25,18 @@ describe('local storage driver', () => {
     expect(saved.url).not.toMatch(/^https?:/);
   });
 
+  it('marks public images with the local-public prefix', async () => {
+    const saved = await storage.save(Buffer.from('hello'), {
+      folder: 'avatars',
+      name: 'a.webp',
+      visibility: 'public',
+    });
+    expect(saved).toEqual({
+      url: 'local-public:avatars/a.webp',
+      publicId: 'avatars/a.webp',
+    });
+  });
+
   it('removes files and tolerates removing something already gone', async () => {
     const { publicId } = await storage.save(Buffer.from('x'), {
       folder: 'reports',
@@ -109,6 +121,17 @@ describe('cloudinary storage driver', () => {
       resource_type: 'image',
       overwrite: false,
     });
+  });
+
+  it('uploads public images as normal Cloudinary assets', async () => {
+    const sdk = fakeSdk();
+    const storage = createCloudinaryStorage({ cloudinaryUrl: url, sdk });
+    await storage.save(Buffer.from('img'), {
+      folder: 'avatars',
+      name: 'a.webp',
+      visibility: 'public',
+    });
+    expect(sdk.calls.upload[0]).toMatchObject({ type: 'upload', resource_type: 'image' });
   });
 
   it('removes by public id and surfaces upload failures', async () => {

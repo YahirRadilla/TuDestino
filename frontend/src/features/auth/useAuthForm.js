@@ -56,21 +56,24 @@ export function useAuthForm({ initialValues, validate, onSubmit }) {
     [validate, values, onSubmit],
   );
 
+  const setValue = useCallback((name, value) => {
+    setValues((current) => ({ ...current, [name]: value }));
+    setErrors((current) => {
+      if (!current[name]) return current;
+      const { [name]: _removed, ...rest } = current;
+      return rest;
+    });
+  }, []);
+
   const fieldProps = (name) => ({
     id: name,
     name,
     value: values[name],
     error: errors[name],
     onChange: (event) => {
-      const { value } = event.target;
-      setValues((current) => ({ ...current, [name]: value }));
-      setErrors((current) => {
-        if (!current[name]) return current;
-        const { [name]: _removed, ...rest } = current;
-        return rest;
-      });
+      setValue(name, event.target.value);
     },
   });
 
-  return { formRef, values, errors, formError, submitting, handleSubmit, fieldProps };
+  return { formRef, values, errors, formError, submitting, handleSubmit, fieldProps, setValue };
 }

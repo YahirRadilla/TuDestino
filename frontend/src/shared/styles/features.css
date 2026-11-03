@@ -871,6 +871,41 @@
 .field__hint {
   color: var(--color-muted);
 }
+.image-upload__body {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+.image-upload__preview,
+.image-upload__placeholder {
+  width: 96px;
+  height: 96px;
+  flex: none;
+  border-radius: var(--radius-tile);
+  border: 1.5px solid var(--color-border);
+  background: var(--color-surface-muted);
+}
+.image-upload__preview {
+  object-fit: cover;
+}
+.image-upload__placeholder {
+  display: grid;
+  place-items: center;
+  gap: 2px;
+  border-style: dashed;
+  color: var(--color-muted);
+  font-size: var(--text-xs);
+}
+.image-upload__actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.image-upload .field__error {
+  color: var(--color-danger);
+}
 .field__error,
 .form-alert {
   color: var(--color-danger);

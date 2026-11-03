@@ -55,13 +55,19 @@ export const changeReportStatusBody = z.strictObject({
 
 // ---------- Destinations ----------
 
+const LOCAL_UPLOAD_PATH = /^\/api\/v1\/uploads\/public\/[\w./-]+$/;
+
 const imageUrl = z
   .string()
   .trim()
   .max(500)
-  .refine((value) => /^\/img\/[\w./-]+$/.test(value) || isHttps(value), {
-    message: 'debe ser una URL https o una ruta /img/…',
-  });
+  .refine(
+    (value) =>
+      /^\/img\/[\w./-]+$/.test(value) || LOCAL_UPLOAD_PATH.test(value) || isHttps(value),
+    {
+      message: 'debe ser una URL https, una ruta /img/… o una imagen subida',
+    },
+  );
 
 function isHttps(value) {
   return URL.canParse(value) && new URL(value).protocol === 'https:';
@@ -135,7 +141,7 @@ const eventShape = {
   lat: z.number().min(-90).max(90).nullable(),
   lng: z.number().min(-180).max(180).nullable(),
   destination_slug: slug.nullable(),
-  image_url: httpsUrl.nullable(),
+  image_url: imageUrl.nullable(),
   capacity: z.number().int().min(1).max(100_000).nullable(),
 };
 

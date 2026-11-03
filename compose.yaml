@@ -24,6 +24,11 @@ services:
       DATABASE_URL: postgres://${POSTGRES_USER:-tudestino}:${POSTGRES_PASSWORD:-change-me}@db:5432/${POSTGRES_DB:-tudestino}
       JWT_SECRET: ${JWT_SECRET:-change-me}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-change-me-too}
+      STORAGE_DRIVER: ${STORAGE_DRIVER:-local}
+      CLOUDINARY_URL: ${CLOUDINARY_URL:-}
+      CLOUDINARY_CLOUD_NAME: ${CLOUDINARY_CLOUD_NAME:-}
+      CLOUDINARY_API_KEY: ${CLOUDINARY_API_KEY:-}
+      CLOUDINARY_API_SECRET: ${CLOUDINARY_API_SECRET:-}
     ports:
       - '3000:3000'
     volumes:

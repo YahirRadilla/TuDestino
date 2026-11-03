@@ -26,6 +26,8 @@ import { createPushRouter, mountMyNotifications } from './pushRoutes.js';
 import { createNotifier, noopNotifier } from '../services/notify.js';
 import { createAdminUserService } from '../services/adminUserService.js';
 import { createAdminRouter, createEventProposalRouter, mountMyProposals } from './adminRoutes.js';
+import { createUploadControllers } from '../controllers/uploadControllers.js';
+import { createUploadRouter } from './uploadRoutes.js';
 
 const DEFAULT_AUTH_RATE_LIMIT = { windowMs: 15 * 60_000, limit: 10 };
 
@@ -129,6 +131,14 @@ export function createApiRouter({
         db,
         rateLimit: admin.rateLimit,
         writeRateLimit: admin.writeRateLimit,
+      }),
+    );
+    router.use(
+      '/uploads',
+      createUploadRouter({
+        controllers: createUploadControllers({ storage }),
+        authenticate,
+        rateLimit: admin.uploadRateLimit,
       }),
     );
     router.use(

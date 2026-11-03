@@ -32,6 +32,12 @@ const vapidSubject = z
   .string()
   .regex(/^(mailto:[^\s@]+@[^\s@]+|https:\/\/[^\s]+)$/, 'debe ser mailto: o https:');
 
+// Compose passes unset variables as empty strings; treat them as absent.
+const optionalEnvString = z.preprocess(
+  (value) => (value === '' ? undefined : value),
+  z.string().min(1).optional(),
+);
+
 const schema = z.object({
   NODE_ENV: z.enum(['development', 'test', 'production']).default('development'),
   PORT: z.coerce.number().int().min(1).max(65535).default(3000),
@@ -53,9 +59,13 @@ const schema = z.object({
   MAIL_FROM: z.string().min(3).default('TuDestino <no-reply@tudestino.local>'),
   AUTH_RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(10),
   AUTH_RATE_LIMIT_WINDOW_MINUTES: z.coerce.number().int().min(1).default(15),
-  // Where report evidence is stored. Defaults to 'cloudinary' in production, 'local' elsewhere.
+  // Where report evidence and public images are stored. Defaults to 'cloudinary' in production,
+  // 'local' elsewhere. CLOUDINARY_URL or the three separate values are accepted.
   STORAGE_DRIVER: z.enum(['local', 'cloudinary']).optional(),
-  CLOUDINARY_URL: z.string().min(1).optional(),
+  CLOUDINARY_URL: optionalEnvString,
+  CLOUDINARY_CLOUD_NAME: optionalEnvString,
+  CLOUDINARY_API_KEY: optionalEnvString,
+  CLOUDINARY_API_SECRET: optionalEnvString,
   UPLOADS_DIR: z.string().min(1).optional(),
   REPORT_RATE_LIMIT_MAX: z.coerce.number().int().min(1).default(10),
   REPORT_RATE_LIMIT_WINDOW_MINUTES: z.coerce.number().int().min(1).default(60),
@@ -127,9 +137,27 @@ export function loadConfig(env = process.env) {
       ? [...DEFAULT_PUSH_HOSTS]
       : null;
   const storageDriver = values.STORAGE_DRIVER ?? (isProduction ? 'cloudinary' : 'local');
-  if (storageDriver === 'cloudinary' && !values.CLOUDINARY_URL) {
+  const cloudinaryParts = [
+    values.CLOUDINARY_CLOUD_NAME,
+    values.CLOUDINARY_API_KEY,
+    values.CLOUDINARY_API_SECRET,
+  ];
+  const cloudinaryCount = cloudinaryParts.filter(Boolean).length;
+  if (cloudinaryCount !== 0 && cloudinaryCount !== 3) {
     throw new Error(
-      'Configuración inválida: CLOUDINARY_URL es obligatoria con STORAGE_DRIVER=cloudinary (por defecto en producción).',
+      'Configuración inválida: CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY y CLOUDINARY_API_SECRET van juntas.',
+    );
+  }
+  const cloudinaryUrl =
+    values.CLOUDINARY_URL ??
+    (cloudinaryCount === 3
+      ? `cloudinary://${encodeURIComponent(values.CLOUDINARY_API_KEY)}:${encodeURIComponent(
+          values.CLOUDINARY_API_SECRET,
+        )}@${values.CLOUDINARY_CLOUD_NAME}`
+      : undefined);
+  if (storageDriver === 'cloudinary' && !cloudinaryUrl) {
+    throw new Error(
+      'Configuración inválida: CLOUDINARY_URL o las tres variables CLOUDINARY_* son obligatorias con STORAGE_DRIVER=cloudinary (por defecto en producción).',
     );
   }
   return {
@@ -172,7 +200,7 @@ export function loadConfig(env = process.env) {
     reports: {
       storage: {
         driver: storageDriver,
-        cloudinaryUrl: values.CLOUDINARY_URL,
+        cloudinaryUrl,
         uploadsDir: path.resolve(BACKEND_ROOT, values.UPLOADS_DIR ?? 'uploads'),
       },
       rateLimit: {

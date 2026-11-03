@@ -1,5 +1,6 @@
 import FormField from '../../auth/components/FormField.jsx';
 import { CheckboxField, SelectField, TextAreaField } from '../../../shared/components/FieldControls.jsx';
+import ImageUploadField from '../../../shared/components/ImageUploadField.jsx';
 import { useForm } from '../../../shared/hooks/useForm.js';
 import { EDU_TYPE_LABELS } from '../adminLabels.js';
 import { eduPayload, emptyEdu, validateEdu } from '../formValidation.js';
@@ -55,14 +56,15 @@ export default function EduForm({
         spellCheck={false}
         placeholder="https://"
       />
-      <FormField
-        {...field('cover_url')}
+      <ImageUploadField
+        id="edu-cover"
         label="Imagen de portada (opcional)"
-        type="url"
-        inputMode="url"
-        autoCapitalize="none"
-        spellCheck={false}
-        placeholder="https:// o /img/…"
+        value={values.cover_url}
+        onChange={(url) => form.setValue('cover_url', url)}
+        purpose="education"
+        error={form.errors.cover_url}
+        hint="Sube una imagen JPEG, PNG o WebP de hasta 5 MB."
+        previewAlt="Vista previa de la portada"
       />
       <FormField
         {...field('slug')}

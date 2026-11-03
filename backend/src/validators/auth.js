@@ -26,13 +26,20 @@ export const strongPassword = z
     message: 'La contraseña debe incluir un símbolo.',
   });
 
+const LOCAL_UPLOAD_PATH = /^\/api\/v1\/uploads\/public\/[\w./-]+$/;
+
 const avatarUrl = z
   .string()
   .trim()
   .max(500, 'La dirección del avatar es demasiado larga.')
-  .refine((value) => URL.canParse(value) && new URL(value).protocol === 'https:', {
-    message: 'El avatar debe ser una URL https válida.',
-  });
+  .refine(
+    (value) =>
+      LOCAL_UPLOAD_PATH.test(value) ||
+      (URL.canParse(value) && new URL(value).protocol === 'https:'),
+    {
+      message: 'El avatar debe ser una URL https válida o una imagen subida.',
+    },
+  );
 
 export const registerBody = z.strictObject({
   full_name: fullName,

@@ -1,5 +1,6 @@
 import FormField from '../../auth/components/FormField.jsx';
 import { CheckboxField, SelectField, TextAreaField } from '../../../shared/components/FieldControls.jsx';
+import ImageUploadField from '../../../shared/components/ImageUploadField.jsx';
 import LocationPicker from '../../map/components/LocationPicker.jsx';
 import Icon from '../../../shared/components/Icon.jsx';
 import { useForm } from '../../../shared/hooks/useForm.js';
@@ -8,7 +9,7 @@ import { destinationPayload, emptyDestination, MAX_IMAGES, validateDestination }
 
 const STATUS_OPTIONS = Object.entries(DESTINATION_STATUS_LABELS).map(([value, label]) => ({ value, label }));
 
-// HU-A05: category, coordinates, images (by URL; no uploads in this phase) and publication state.
+// HU-A05: category, coordinates, uploaded images and publication state.
 export default function DestinationForm({
   initialValues = emptyDestination(),
   categories,
@@ -106,16 +107,14 @@ export default function DestinationForm({
         </legend>
         {values.images.map((image, index) => (
           <div key={index} className="image-row">
-            <FormField
-              id={`dest-image-url-${index}`}
-              label={`URL de la imagen ${index + 1}`}
-              type="url"
-              inputMode="url"
-              autoCapitalize="none"
-              spellCheck={false}
-              placeholder="https:// o /img/…"
+            <ImageUploadField
+              id={`dest-image-${index}`}
+              label={`Imagen ${index + 1}`}
               value={image.url}
-              onChange={(event) => setImage(index, { url: event.target.value })}
+              onChange={(url) => setImage(index, { url })}
+              purpose="destination"
+              hint="Sube una imagen JPEG, PNG o WebP de hasta 5 MB."
+              previewAlt={`Vista previa de la imagen ${index + 1}`}
             />
             <FormField
               id={`dest-image-alt-${index}`}

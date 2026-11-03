@@ -517,6 +517,7 @@ Guion de demo sugerido: instalar la app → activar modo avión y navegar conten
 | ADR-08 | `CLAUDE.md` en español neutro; código e identificadores en inglés | Documentos fuente en español |
 | ADR-09 | Leaflet + OpenStreetMap en lugar de Google Maps | Sin API key ni facturación; permite cachear teselas visitadas y el modo sin conexión. Cierra D-03 |
 | ADR-10 | Interfaz final: tema azul, Inicio y Explorar comparten catálogo, sin «Cerca de mí» en el catálogo ni botón de compartir en destinos; valoraciones solo reales | Simplificar la navegación y no mostrar datos simulados |
+| ADR-11 | Imágenes públicas en Cloudinary (`type: upload`) y evidencias privadas (`type: authenticated`); credenciales en el `.env` de la raíz, nunca en git | Las fotos de perfil, destinos, eventos y educación deben renderizarse directo; las evidencias de reportes siguen protegidas |
 
 ### Decisiones abiertas (valor por defecto aplicado; el equipo puede cambiarlo)
 

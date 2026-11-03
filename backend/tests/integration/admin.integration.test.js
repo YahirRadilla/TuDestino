@@ -1279,4 +1279,39 @@ describe.skipIf(!process.env.DATABASE_URL)('staff panel API (PostgreSQL)', () =>
       expect(logged).not.toContain(people.citizen2.email);
     });
   });
+
+  describe('public image uploads', () => {
+    const upload = (who, purpose, bytes, contentType = 'image/jpeg') => {
+      const requestBuilder = request(app).post(`/api/v1/uploads/images?purpose=${purpose}`);
+      if (who) requestBuilder.set(as(who));
+      return requestBuilder.attach('image', bytes, { filename: 'photo.jpg', contentType });
+    };
+
+    it('lets any signed-in account upload an avatar and serves it locally', async () => {
+      const res = await upload('citizen', 'avatar', await jpeg());
+      expect(res.status).toBe(201);
+      expect(res.body.data.url).toMatch(/^\/api\/v1\/uploads\/public\/avatars\/.+\.webp$/);
+
+      const image = await request(app).get(res.body.data.url);
+      expect(image.status).toBe(200);
+      expect(image.headers['content-type']).toMatch(/^image\/webp/);
+      expect(image.headers['cache-control']).toContain('immutable');
+      expect(image.body.length).toBeGreaterThan(0);
+    });
+
+    it('restricts destination and education covers to staff', async () => {
+      expect((await upload('citizen', 'destination', await jpeg())).status).toBe(403);
+      expect((await upload('citizen', 'education', await jpeg())).status).toBe(403);
+      expect((await upload('authority', 'destination', await jpeg())).status).toBe(201);
+      expect((await upload('admin', 'education', await jpeg())).status).toBe(201);
+    });
+
+    it('validates the purpose, the session and the image bytes', async () => {
+      expect((await upload(null, 'avatar', await jpeg())).status).toBe(401);
+      expect((await upload('citizen', 'unknown', await jpeg())).status).toBe(400);
+      expect(
+        (await upload('citizen', 'avatar', Buffer.from('<svg/>'), 'image/svg+xml')).status,
+      ).toBe(415);
+    });
+  });
 });

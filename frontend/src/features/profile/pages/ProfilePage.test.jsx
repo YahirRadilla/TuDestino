@@ -4,7 +4,7 @@ import userEvent from '@testing-library/user-event';
 import { Route } from 'react-router-dom';
 import ProfilePage from './ProfilePage.jsx';
 import { renderWithAuth } from '../../../test/renderWithAuth.jsx';
-import { noContent, session, stubApi, testUser } from '../../../test/apiStub.js';
+import { noContent, apiError, session, stubApi, testUser } from '../../../test/apiStub.js';
 
 const routes = [<Route key="profile" path="/perfil" element={<ProfilePage />} />];
 
@@ -57,26 +57,42 @@ describe('ProfilePage', () => {
     it('saves name and avatar through PATCH /me', async () => {
       const api = signIn(testUser, {
         'PATCH /me': (call) => ({ data: { ...testUser, ...call.body } }),
+        'POST /uploads/images': { data: { url: 'https://res.cloudinary.com/demo/avatar.webp' } },
       });
       renderWithAuth(routes, { route: '/perfil' });
       const name = await screen.findByLabelText('Nombre completo');
       await userEvent.clear(name);
       await userEvent.type(name, 'Ana María');
-      await userEvent.type(screen.getByLabelText(/Foto de perfil/), 'https://example.com/a.png');
+      await userEvent.upload(
+        screen.getByLabelText(/Foto de perfil/),
+        new File(['foto'], 'avatar.png', { type: 'image/png' }),
+      );
+      await screen.findByRole('img', { name: 'Vista previa de la foto de perfil' });
       await userEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
       expect(await screen.findByText('Cambios guardados.')).toBeInTheDocument();
       const patch = api.calls.find((call) => call.method === 'PATCH');
-      expect(patch.body).toEqual({ full_name: 'Ana María', avatar_url: 'https://example.com/a.png' });
+      expect(patch.body).toEqual({
+        full_name: 'Ana María',
+        avatar_url: 'https://res.cloudinary.com/demo/avatar.webp',
+      });
       expect(patch.authorization).toBe('Bearer access-1');
       expect(await screen.findByRole('heading', { name: 'Ana María' })).toBeInTheDocument();
     });
 
-    it('does not send an avatar that is not https', async () => {
-      const api = signIn();
+    it('shows an upload error and does not save the avatar', async () => {
+      const api = signIn(testUser, {
+        'POST /uploads/images': apiError(
+          415,
+          'UNSUPPORTED_MEDIA_TYPE',
+          'Solo se aceptan fotos JPEG, PNG o WebP válidas.',
+        ),
+      });
       renderWithAuth(routes, { route: '/perfil' });
-      await userEvent.type(await screen.findByLabelText(/Foto de perfil/), 'http://example.com/a.png');
-      await userEvent.click(screen.getByRole('button', { name: 'Guardar cambios' }));
-      expect(screen.getByLabelText(/Foto de perfil/)).toHaveAccessibleDescription(/https/);
+      await userEvent.upload(
+        await screen.findByLabelText(/Foto de perfil/),
+        new File(['foto'], 'avatar.png', { type: 'image/png' }),
+      );
+      expect(await screen.findByText('Solo se aceptan fotos JPEG, PNG o WebP válidas.')).toBeInTheDocument();
       expect(api.calls.some((call) => call.method === 'PATCH')).toBe(false);
     });
 

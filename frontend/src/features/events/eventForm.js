@@ -4,6 +4,7 @@ import { parseLat, parseLng } from '../reports/reportValidation.js';
 // the API (a new event cannot start in the past; the end cannot precede the start).
 
 const PAST_TOLERANCE_MS = 5 * 60_000;
+const LOCAL_UPLOAD_PATH = /^\/api\/v1\/uploads\/public\/[\w./-]+$/;
 
 export const emptyEventForm = () => ({
   title: '',
@@ -67,8 +68,14 @@ export function validateEventForm(values, { isNew = true, now = Date.now() } = {
   }
   if (values.location_name.trim().length > 150) errors.location_name = 'Máximo 150 caracteres.';
   const image = values.image_url.trim();
-  if (image && !(URL.canParse(image) && new URL(image).protocol === 'https:')) {
-    errors.image_url = 'Debe ser una URL que empiece con https://';
+  if (
+    image &&
+    !(
+      LOCAL_UPLOAD_PATH.test(image) ||
+      (URL.canParse(image) && new URL(image).protocol === 'https:')
+    )
+  ) {
+    errors.image_url = 'Sube una imagen válida o usa una URL que empiece con https://';
   }
   const capacity = values.capacity.trim();
   if (capacity && !(/^\d+$/.test(capacity) && Number(capacity) >= 1 && Number(capacity) <= 100000)) {

@@ -1,5 +1,6 @@
 import FormField from '../../auth/components/FormField.jsx';
 import { TextAreaField } from '../../../shared/components/FieldControls.jsx';
+import ImageUploadField from '../../../shared/components/ImageUploadField.jsx';
 import LocationPicker from '../../map/components/LocationPicker.jsx';
 import { useForm } from '../../../shared/hooks/useForm.js';
 import { emptyEventForm, eventPayload, validateEventForm } from '../eventForm.js';
@@ -77,15 +78,15 @@ export default function EventForm({
           placeholder="-110.3128"
         />
       </div>
-      <FormField
-        {...field('image_url')}
+      <ImageUploadField
+        id={`${idPrefix}-image`}
         label="Imagen (opcional)"
-        type="url"
-        inputMode="url"
-        autoCapitalize="none"
-        spellCheck={false}
-        placeholder="https://"
-        hint="Dirección de una imagen que empiece con https://"
+        value={values.image_url}
+        onChange={(url) => form.setValue('image_url', url)}
+        purpose="event"
+        error={form.errors.image_url}
+        hint="Sube una imagen JPEG, PNG o WebP de hasta 5 MB."
+        previewAlt="Vista previa de la imagen del evento"
       />
       <FormField {...field('capacity')} label="Cupo (opcional)" inputMode="numeric" autoComplete="off" />
       {form.formError && (

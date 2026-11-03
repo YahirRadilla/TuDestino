@@ -81,6 +81,16 @@ describe('loadConfig', () => {
     expect(
       loadConfig({ ...prod, CLOUDINARY_URL: 'cloudinary://k:s@c' }).reports.storage.driver,
     ).toBe('cloudinary');
+    const separate = loadConfig({
+      ...prod,
+      CLOUDINARY_CLOUD_NAME: 'demo',
+      CLOUDINARY_API_KEY: 'key',
+      CLOUDINARY_API_SECRET: 'secret',
+    });
+    expect(separate.reports.storage.cloudinaryUrl).toBe('cloudinary://key:secret@demo');
+    expect(() =>
+      loadConfig({ ...prod, CLOUDINARY_CLOUD_NAME: 'demo', CLOUDINARY_API_KEY: 'key' }),
+    ).toThrow(/van juntas/);
   });
 
   it('bounds the refresh token lifetime and bcrypt cost', () => {
