@@ -178,7 +178,7 @@ Fuente: `Monica.pdf` págs. 11–12. Se añaden métricas verificables.
 | PWA-05 | Almacenamiento local | IndexedDB (contenido, favoritos, cola de reportes), LocalStorage (tema, aviso de instalación), SessionStorage (borradores y filtros) |
 | PWA-06 | Service Worker | `src/sw.js` escrito a mano (ver ADR-02) |
 | PWA-07 | Cache API con ≥ 1 estrategia | Tabla de la sección 12 |
-| PWA-08 | Funcionamiento offline (al menos parcial) | Navegar destinos, eventos y educación cacheados; crear reportes en cola |
+| PWA-08 | Funcionamiento offline (al menos parcial) | Navegar destinos, eventos y educación cacheados; crear reportes y propuestas de eventos en cola |
 | PWA-09 | Manifest con nombre e íconos | `name`, `short_name`, íconos 192/512 y maskable, `theme_color`, `start_url`, `display: standalone` |
 | PWA-10 | Instalable | `beforeinstallprompt` con botón propio; verificado en DevTools > Application |
 | PWA-11 | HTTPS | Despliegue con certificado válido |
@@ -384,6 +384,7 @@ Base: `/api/v1`. Errores con formato uniforme `{ "error": { "code": "...", "mess
 | Imágenes de Cloudinary | Cache-first con expiración (≈150 entradas, 30 días) |
 | Autenticación, panel de administración, `POST`/`PATCH`/`DELETE` | Network-only |
 | `POST /reports` | Network-only + cola de Background Sync + *outbox* en IndexedDB visible en la interfaz |
+| `POST /events` (propuesta) | Network-only desde la página + store `proposals` en IndexedDB; sin conexión se guarda y se envía al volver la red, al abrir la app o al reenfocar la pestaña. El service worker no la procesa porque requiere sesión |
 | Tiles de mapa | `CacheFirst` para las teselas ya visitadas de OpenStreetMap (máx. 300, 7 días). Sin teselas, el mapa pasa a un fondo neutro y la lista equivalente sigue disponible con los destinos guardados en IndexedDB |
 
 **Almacenamiento local:** LocalStorage (tema, aviso de instalación); SessionStorage (borradores de formularios, filtros activos); IndexedDB (contenido cacheado, favoritos, outbox).
@@ -519,6 +520,7 @@ Guion de demo sugerido: instalar la app → activar modo avión y navegar conten
 | ADR-10 | Interfaz final: tema azul, Inicio y Explorar comparten catálogo, sin «Cerca de mí» en el catálogo ni botón de compartir en destinos; valoraciones solo reales | Simplificar la navegación y no mostrar datos simulados |
 | ADR-11 | Imágenes públicas en Cloudinary (`type: upload`) y evidencias privadas (`type: authenticated`); credenciales en el `.env` de la raíz, nunca en git | Las fotos de perfil, destinos, eventos y educación deben renderizarse directo; las evidencias de reportes siguen protegidas |
 | ADR-12 | El service worker solo registra rutas `GET`; los `POST`/`PUT`/`PATCH`/`DELETE` no se interceptan | Safari 26.x en iOS pierde el cuerpo de un `POST` multipart cuando el worker lo reenvía con `fetch(request)`, lo que rompía la subida de imágenes desde iPhone |
+| ADR-13 | Un solo `ImagePicker` para todos los formularios, con subida inmediata opcional; las propuestas de eventos usan un store `proposals` aparte y las entrega solo la página | Evita reimplementar el selector por pantalla y permite guardar propuestas sin red sin mezclarlas con el outbox de reportes ni enviarlas sin sesión |
 
 ### Decisiones abiertas (valor por defecto aplicado; el equipo puede cambiarlo)
 

@@ -16,7 +16,7 @@ export default function ProfileForm({ user }) {
   const [avatarImages, setAvatarImages] = useState(() =>
     user.avatar_url ? [{ id: 'avatar-current', url: user.avatar_url }] : [],
   );
-  const { formRef, formError, submitting, handleSubmit, fieldProps, values, setValue } = useAuthForm({
+  const { formRef, formError, submitting, handleSubmit, fieldProps, setValue } = useAuthForm({
     initialValues: { full_name: user.full_name, avatar_url: user.avatar_url ?? '' },
     validate,
     onSubmit: async ({ full_name, avatar_url }) => {

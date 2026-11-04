@@ -110,12 +110,26 @@ describe.skipIf(!process.env.DATABASE_URL)('public catalog API (PostgreSQL)', ()
     expect(res.body.data.map((c) => c.slug).sort()).toEqual(['anp', 'cultura', 'mirador', 'playa']);
   });
 
-  it('lists only upcoming published events ordered by date', async () => {
+  it('lists published events from today onward ordered by date', async () => {
     const res = await request(app).get('/api/v1/events');
     expect(res.status).toBe(200);
     expect(res.body.data.length).toBeGreaterThanOrEqual(3);
+    const bcsDate = new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'America/Mazatlan',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(new Date());
+    const startOfToday = new Date(`${bcsDate}T00:00:00-07:00`);
     const dates = res.body.data.map((e) => new Date(e.starts_at).getTime());
-    expect(dates.every((t) => t > Date.now())).toBe(true);
+    // An event stays listed if it starts today or if its end is still in the future.
+    expect(
+      res.body.data.every(
+        (e) =>
+          new Date(e.starts_at).getTime() >= startOfToday.getTime() ||
+          new Date(e.ends_at ?? e.starts_at).getTime() >= Date.now(),
+      ),
+    ).toBe(true);
     expect([...dates].sort((a, b) => a - b)).toEqual(dates);
     expect(res.body.data[0]).not.toHaveProperty('organizer_id');
   });

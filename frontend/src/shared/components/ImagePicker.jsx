@@ -1,4 +1,4 @@
-import { useId, useState } from 'react';
+import { useId, useRef, useState } from 'react';
 import Icon from './Icon.jsx';
 import { ACCEPTED_TYPES, PhotoError, preparePhoto } from '../utils/imagePrep.js';
 
@@ -31,8 +31,10 @@ export default function ImagePicker({
 }) {
   const generatedId = useId();
   const inputId = id ?? generatedId;
+  const labelId = `${inputId}-label`;
   const hintId = `${inputId}-hint`;
   const errorId = `${inputId}-error`;
+  const inputRef = useRef(null);
   const [busy, setBusy] = useState(false);
   const [problem, setProblem] = useState('');
   const single = max === 1;
@@ -62,7 +64,7 @@ export default function ImagePicker({
     const files = picked.slice(0, room);
     const tooMany = picked.length > files.length;
     setBusy(true);
-    setProblem(tooMany ? `Solo puedes adjuntar ${max} ${max === 1 ? 'imagen' : 'imágenes'}.` : '');
+    setProblem(tooMany ? `Solo puedes adjuntar ${max} ${max === 1 ? 'imagen' : 'fotos'}.` : '');
     const added = [];
     for (const file of files) {
       try {
@@ -100,9 +102,8 @@ export default function ImagePicker({
   return (
     <section
       className={`photo-picker image-picker${single ? ' image-picker--single' : ''} ${className}`.trim()}
-      aria-labelledby={`${inputId}-label`}
     >
-      <span id={`${inputId}-label`} className="field__label">
+      <span id={labelId} className="field__label">
         {label}
       </span>
       {hint && (
@@ -128,14 +129,17 @@ export default function ImagePicker({
           ))}
         </ul>
       )}
-      <label
-        htmlFor={inputId}
+      <button
+        type="button"
         className={full || busy || disabled ? 'btn btn--ghost photo-picker__add is-disabled' : 'btn btn--ghost photo-picker__add'}
+        onClick={() => inputRef.current?.click()}
+        disabled={disabled || busy || full}
       >
         <Icon name="plus" size={18} />
         {addText}
-      </label>
+      </button>
       <input
+        ref={inputRef}
         id={inputId}
         className="sr-only"
         type="file"
@@ -143,6 +147,7 @@ export default function ImagePicker({
         multiple={!single}
         disabled={disabled || busy || full}
         onChange={pick}
+        aria-labelledby={labelId}
         aria-describedby={describedBy}
       />
       {shownError && (

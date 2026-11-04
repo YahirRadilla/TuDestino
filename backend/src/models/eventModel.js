@@ -1,8 +1,17 @@
+// "Upcoming" includes today's events even after their start/end: an approved proposal scheduled
+// earlier today must stay visible until the day is over. "Today" is the local day in Baja
+// California Sur, not UTC: a 3 pm event must not disappear at 5 pm because the server already
+// crossed midnight. Finished events from previous days are still hidden (their detail page and
+// shared link keep working).
+const TODAY_START = `date_trunc('day', now() AT TIME ZONE 'America/Mazatlan') AT TIME ZONE 'America/Mazatlan'`;
 const UPCOMING = `
   FROM events e
   LEFT JOIN destinations d ON d.id = e.destination_id AND d.deleted_at IS NULL
   WHERE e.status = 'published' AND e.deleted_at IS NULL
-    AND COALESCE(e.ends_at, e.starts_at) >= now()`;
+    AND (
+      COALESCE(e.ends_at, e.starts_at) >= now()
+      OR e.starts_at >= ${TODAY_START}
+    )`;
 
 const EVENT_COLUMNS = `
   e.id, e.title, e.description, e.starts_at, e.ends_at, e.location_name,
@@ -49,7 +58,10 @@ export async function findPublishedById(db, id, userId = null) {
 // Locks the event row so a concurrent cancellation cannot slip between the check and the insert.
 export async function lockPublishedForAttendance(client, id) {
   const { rows } = await client.query(
-    `SELECT id, COALESCE(ends_at, starts_at) >= now() AS is_open
+    `SELECT id, (
+       COALESCE(ends_at, starts_at) >= now()
+       OR (ends_at IS NULL AND starts_at >= ${TODAY_START})
+     ) AS is_open
      FROM events
      WHERE id = $1 AND status = 'published' AND deleted_at IS NULL
      FOR SHARE`,

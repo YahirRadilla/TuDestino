@@ -88,9 +88,9 @@ describe('destinations admin', () => {
       await userEvent.type(within(dialog).getByLabelText('Latitud'), '24,1426');
       await userEvent.type(within(dialog).getByLabelText('Longitud'), '-110.3128');
       await userEvent.type(within(dialog).getByLabelText(/Consejos de cuidado/), 'Lleva tu basura');
-      await userEvent.click(within(dialog).getByRole('button', { name: 'Agregar imagen' }));
+      await userEvent.click(within(dialog).getByRole('button', { name: 'Agregar fotos' }));
       await userEvent.upload(
-        within(dialog).getByLabelText('Imagen 1'),
+        within(dialog).getByLabelText(/Imágenes/),
         new File(['foto'], 'nueva.png', { type: 'image/png' }),
       );
       expect(

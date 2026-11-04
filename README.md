@@ -45,7 +45,7 @@ Ya no se pide pegar una URL de imagen en los formularios: se elige un archivo, s
 - **Qué se puede subir.** Foto de perfil, imágenes de destinos, imagen de eventos/propuestas y portada de contenido educativo. Solo JPEG, PNG o WebP de hasta 5 MB; el backend comprueba los magic bytes, elimina metadatos y re-codifica a WebP.
 - **Permisos.** `POST /api/v1/uploads/images?purpose=avatar|event` requiere sesión; `destination` y `education` requieren `authority` o `admin`.
 - **Público vs. privado.** Estas imágenes se guardan como recursos públicos de Cloudinary (o bajo `/api/v1/uploads/public/…` con el driver local). Las evidencias de reportes siguen siendo privadas: Cloudinary `authenticated` y lectura solo por la ruta autenticada del panel.
-- **Componente compartido.** `frontend/src/shared/components/ImageUploadField.jsx` muestra vista previa, estado «Subiendo…», error y opción de quitar; `frontend/src/api/uploads.js` envía el `FormData`. El selector no se limpia hasta que termina la subida, porque iOS Safari puede invalidar el archivo si se reinicia antes.
+- **Componente compartido.** `frontend/src/shared/components/ImagePicker.jsx` es el único selector de imágenes: muestra vista previa, estado «Subiendo…», error y opción de quitar, y se adapta a una o varias imágenes (`max`). Con `upload` sube al instante (perfil, destinos, educación y eventos); sin `upload` conserva el archivo local para la cola offline (reportes y propuestas). `frontend/src/api/uploads.js` envía el `FormData`. El selector no se limpia hasta que termina la subida, porque iOS Safari puede invalidar el archivo si se reinicia antes.
 - **iOS/Safari y service worker.** El service worker solo intercepta peticiones `GET`. Los `POST`/`PUT`/`PATCH`/`DELETE` se dejan al navegador: Safari 26.x en iOS pierde el cuerpo de un `multipart/form-data` si el worker lo reenvía con `fetch(request)`, y la API lo recibía como multipart vacío.
 
 ## Base de datos, migraciones y seeds (Sprint 2)
@@ -205,6 +205,10 @@ curl -X POST http://localhost:3100/api/v1/reports/track -H 'Content-Type: applic
 - **El código de un reporte enviado en segundo plano** no tiene pantalla donde mostrarse: la entrada pasa a `sent` y conserva folio y código **hasta que el usuario pulsa «Ya lo guardé»** en «Pendientes de envío» (se borra entonces, y también se descarta el cuerpo y las fotos al marcar `sent`). Es la única copia del código en el dispositivo; si el envío ocurre con la pantalla de éxito abierta, el código solo vive en memoria.
 - **`occurred_at`.** Solo se envía cuando el reporte estuvo en cola más de 2 minutos (y nunca en el futuro), para que un envío diferido conserve la hora real sin que un reloj desajustado del teléfono bloquee un reporte normal.
 - **Limitación conocida:** si la respuesta de creación se pierde por la red después de que el servidor la guardó, el reintento recibe el folio pero no el código (solo se muestra una vez); la pantalla lo explica.
+
+### Propuestas de eventos sin conexión (2026-11-03)
+
+«Proponer un evento» también funciona sin red. La propuesta se guarda primero en el store `proposals` de IndexedDB (payload, `clientUuid` estable y la imagen ya reducida); la pantalla confirma que quedó guardada en el dispositivo. Al recuperar conexión, abrir la app o volver a la pestaña, `ProposalOutboxSync` la envía: sube la imagen con `purpose=event`, crea el evento con `POST /events` y elimina la entrada local. Si el servidor responde un error de validación, la entrada queda como `failed` en «Mis propuestas» con el motivo y las acciones **Reintentar** y **Descartar**. Las propuestas siempre exigen sesión, así que el service worker no las procesa; solo las entrega la página con el token en memoria. Un evento aprobado hoy sigue visible en la lista pública durante el resto del día aunque su hora de inicio ya haya pasado.
 
 ## Panel de autoridad y administración (Sprint 7 · F7)
 

@@ -171,6 +171,10 @@
   padding: 0;
   list-style: none;
 }
+.image-picker--single .photo-grid {
+  grid-template-columns: minmax(0, 1fr);
+  max-width: 320px;
+}
 .photo-grid__item {
   position: relative;
   aspect-ratio: 4 / 3;

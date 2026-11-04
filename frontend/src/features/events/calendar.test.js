@@ -72,11 +72,12 @@ describe('dayKey / isEnded', () => {
     expect(dayKey(new Date(2026, 0, 5))).toBe('2026-01-05');
   });
 
-  it('an event is over once its end (or start, without end) has passed', () => {
+  it('uses the end when there is one, or the end of the start day otherwise', () => {
     const now = new Date(2026, 9, 17, 12);
     expect(isEnded({ starts_at: at(2026, 10, 17, 9), ends_at: at(2026, 10, 17, 11) }, now)).toBe(true);
     expect(isEnded({ starts_at: at(2026, 10, 17, 9), ends_at: at(2026, 10, 17, 13) }, now)).toBe(false);
-    expect(isEnded({ starts_at: at(2026, 10, 17, 9), ends_at: null }, now)).toBe(true);
+    expect(isEnded({ starts_at: at(2026, 10, 17, 9), ends_at: null }, now)).toBe(false);
+    expect(isEnded({ starts_at: at(2026, 10, 16, 9), ends_at: null }, now)).toBe(true);
     expect(isEnded({ starts_at: at(2026, 10, 18, 9), ends_at: null }, now)).toBe(false);
   });
 });

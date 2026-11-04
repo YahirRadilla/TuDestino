@@ -102,7 +102,12 @@ export default function DestinationForm({
         id="dest-images"
         label={`Imágenes (${values.images.length}/${MAX_IMAGES})`}
         images={values.images}
-        onChange={(images) => form.setValue('images', images)}
+        onChange={(images) =>
+          form.setValue(
+            'images',
+            images.map((image) => ({ alt_text: '', ...image })),
+          )
+        }
         max={MAX_IMAGES}
         upload={(file) => uploadPublicImage(file, 'destination')}
         error={form.errors.images}

@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { screen, within } from '@testing-library/react';
+import { screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { Route } from 'react-router-dom';
+import { enqueueProposal } from '../../../storage/proposalOutbox.js';
 import { RequireAuth } from '../../auth/components/RouteGuards.jsx';
 import { renderWithAuth } from '../../../test/renderWithAuth.jsx';
 import { apiError, json, session, stubApi, testUser } from '../../../test/apiStub.js';
@@ -132,13 +133,22 @@ describe('propose an event (RF20)', () => {
     expect(await screen.findByLabelText('Título')).toHaveValue('');
   });
 
-  it('shows the server error and keeps what was typed', async () => {
+  it('shows a validation error and keeps what was typed', async () => {
+    signedIn({ 'POST /events': () => apiError(400, 'VALIDATION_ERROR', 'Revisa los datos.') });
+    renderWithAuth(routes, { route: '/eventos/proponer' });
+    await fill();
+    await userEvent.click(screen.getByRole('button', { name: 'Enviar propuesta' }));
+    expect(await screen.findByRole('alert')).toHaveTextContent('Revisa los datos');
+    expect(screen.getByLabelText('Título')).toHaveValue('Limpieza de Balandra');
+  });
+
+  it('keeps a rate-limited proposal in the device queue for a later retry', async () => {
     signedIn({ 'POST /events': () => apiError(429, 'RATE_LIMITED', 'Demasiadas solicitudes.') });
     renderWithAuth(routes, { route: '/eventos/proponer' });
     await fill();
     await userEvent.click(screen.getByRole('button', { name: 'Enviar propuesta' }));
-    expect(await screen.findByRole('alert')).toHaveTextContent('Demasiadas solicitudes');
-    expect(screen.getByLabelText('Título')).toHaveValue('Limpieza de Balandra');
+    expect(await screen.findByText('Propuesta guardada en este dispositivo')).toBeInTheDocument();
+    expect(screen.getByText(/se enviará automáticamente/)).toBeInTheDocument();
   });
 });
 
@@ -193,6 +203,26 @@ describe('my proposals', () => {
       'href',
       '/eventos/proponer',
     );
+  });
+
+  it('shows proposals saved on the device and lets the person discard them', async () => {
+    await enqueueProposal({
+      clientUuid: 'local-1',
+      payload: {
+        title: 'Propuesta guardada',
+        starts_at: '2099-08-01T15:00:00.000Z',
+        location_name: 'Balandra',
+      },
+    });
+    signedIn({ 'GET /me/events/proposed': { data: [] } });
+    renderWithAuth(routes, { route: '/perfil/propuestas' });
+
+    expect(await screen.findByText('Guardadas en este dispositivo')).toBeInTheDocument();
+    expect(screen.getByText('Propuesta guardada')).toBeInTheDocument();
+    expect(screen.getByText(/se enviará cuando haya conexión/)).toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole('button', { name: 'Descartar' }));
+    await waitFor(() => expect(screen.queryByText('Propuesta guardada')).not.toBeInTheDocument());
   });
 
   it('explains a lost connection with a retry', async () => {
