@@ -24,3 +24,11 @@ export function markCatalogStale() {
     // makes the next request use a new URL for this session.
   }
 }
+
+// Query params that force the browser and the service worker to miss their cached public copy
+// once after a write. Use it in every public catalogue read (destinations, events, education,
+// map pins).
+export function freshnessParams() {
+  const revision = catalogRevision();
+  return revision ? { _r: revision } : {};
+}

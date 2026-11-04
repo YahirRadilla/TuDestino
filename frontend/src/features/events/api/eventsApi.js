@@ -1,5 +1,6 @@
 import { ApiError, apiFetch } from '../../../api/client.js';
 import { mirrorEvents } from '../../../storage/catalogCache.js';
+import { freshnessParams } from '../../../storage/catalogFreshness.js';
 
 const assertList = (payload) => {
   if (!Array.isArray(payload?.data)) throw new ApiError('http', 'Respuesta inesperada del servidor.');
@@ -10,7 +11,9 @@ const assertList = (payload) => {
 // one (`auth: 'optional'`: an expired token just gets the anonymous answer).
 // Read-through: a complete list refreshes the IndexedDB mirror used offline.
 export async function fetchEvents({ limit = 50 } = {}, signal) {
-  const payload = assertList(await apiFetch('/events', { auth: 'optional', signal, params: { limit } }));
+  const payload = assertList(
+    await apiFetch('/events', { auth: 'optional', signal, params: { limit, ...freshnessParams() } }),
+  );
   void mirrorEvents(payload.data, { complete: payload.data.length < limit });
   return payload.data;
 }
@@ -18,7 +21,11 @@ export async function fetchEvents({ limit = 50 } = {}, signal) {
 // null when the event does not exist (or is not public).
 export async function fetchEvent(id, signal) {
   try {
-    const payload = await apiFetch(`/events/${encodeURIComponent(id)}`, { auth: 'optional', signal });
+    const payload = await apiFetch(`/events/${encodeURIComponent(id)}`, {
+      auth: 'optional',
+      signal,
+      params: freshnessParams(),
+    });
     if (!payload?.data?.id) throw new ApiError('http', 'Respuesta inesperada del servidor.');
     void mirrorEvents([payload.data]);
     return payload.data;

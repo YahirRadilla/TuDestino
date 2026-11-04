@@ -1,15 +1,8 @@
 import { ApiError, apiFetch } from '../../../api/client.js';
 import { mirrorDestinations } from '../../../storage/catalogCache.js';
-import { catalogRevision } from '../../../storage/catalogFreshness.js';
+import { freshnessParams } from '../../../storage/catalogFreshness.js';
 
 const REGION = 'Baja California Sur';
-
-// A review changes avg_rating/reviews_count. Include the revision in catalog URLs so the browser
-// HTTP cache and the service-worker cache miss once after that write.
-const freshnessParams = () => {
-  const revision = catalogRevision();
-  return revision ? { _r: revision } : {};
-};
 
 // API payload -> the shape the UI components already consume (see data/seed.js).
 // The slug doubles as the stable id so favorites survive switching between API and local data.

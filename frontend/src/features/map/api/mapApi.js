@@ -1,9 +1,10 @@
 import { ApiError, apiFetch } from '../../../api/client.js';
+import { freshnessParams } from '../../../storage/catalogFreshness.js';
 import { adminReportMarker, destinationMarker, publicReportMarker } from '../mapModel.js';
 
 // Public layer: anonymous, cacheable by the service worker (stale-while-revalidate).
 export async function fetchPublicPins(signal) {
-  const payload = await apiFetch('/map/pins', { signal });
+  const payload = await apiFetch('/map/pins', { signal, params: freshnessParams() });
   if (!Array.isArray(payload?.data?.destinations) || !Array.isArray(payload?.data?.reports)) {
     throw new ApiError('http', 'Respuesta inesperada del servidor.');
   }

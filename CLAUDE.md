@@ -381,6 +381,7 @@ Base: `/api/v1`. Errores con formato uniforme `{ "error": { "code": "...", "mess
 | App shell (HTML, JS, CSS, íconos) | Precache versionado por hash |
 | Navegación | Fallback a `index.html`; `offline.html` si no hay shell |
 | `GET` de destinos, eventos, contenido educativo y categorías | Stale-while-revalidate + espejo en IndexedDB para buscar y filtrar sin conexión |
+| Frescura tras escrituras | `catalogFreshness.js` guarda una revisión y las lecturas públicas añaden `_r` para saltar la copia vieja del navegador y del service worker; se marca al reseñar y al crear/editar/eliminar/moderar desde el panel |
 | Imágenes de Cloudinary | Cache-first con expiración (≈150 entradas, 30 días) |
 | Autenticación, panel de administración, `POST`/`PATCH`/`DELETE` | Network-only |
 | `POST /reports` | Network-only + cola de Background Sync + *outbox* en IndexedDB visible en la interfaz |
